@@ -27,13 +27,10 @@ async def main():
         print("❌ Ошибка: MAX_BOT_TOKEN не найден!")
         print("Создайте файл .env и добавьте: MAX_BOT_TOKEN=ваш_токен")
         return
-    
     logger.info("Запуск бота в MAX...")
-    
     # Создаём бота
     bot = Bot(token=BOT_TOKEN)
     print("Токен передан в бота")
-    
     # Запускаем polling (удаляем webhook если был)
     # await bot.delete_webhook()
     await dp.start_polling(bot)
