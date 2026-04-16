@@ -1,73 +1,126 @@
-# Правильные импорты из документации MAX API
 from maxapi.utils.inline_keyboard import InlineKeyboardBuilder
-from maxapi.types.attachments.buttons import CallbackButton, LinkButton
-# Константы меню остаются без изменений
-from config import MAIN_MENU_BUTTONS, ACTION_BUTTONS, ITEMS_PER_PAGE
+from maxapi.types.attachments.buttons import CallbackButton
+from config import CATEGORIES, CATEGORY_DEVICES, ITEMS_PER_PAGE
 
-# ВСПОМОГАТЕЛЬНАЯ ФУНКЦИЯ (чтобы не дублировать код)
+
 def _build_keyboard(buttons_rows):
-    """Принимает список строк кнопок и возвращает готовую разметку."""
     builder = InlineKeyboardBuilder()
     for row in buttons_rows:
         builder.row(*row)
-    return builder.as_markup() # .as_markup() создаёт объект для вставки в attachments
+    return builder.as_markup()
 
-# --- ГЛАВНОЕ МЕНЮ ---
+
+# ========== ГЛАВНОЕ МЕНЮ (10 КАТЕГОРИЙ) ==========
 def get_main_menu():
     buttons_rows = []
-    # Кнопки устройств (по 2 в ряд для удобства)
-    device_buttons = list(MAIN_MENU_BUTTONS.items())
-    for i in range(0, len(device_buttons), 2):
-        row = []
-        for text, callback in device_buttons[i:i+2]:
-            row.append(CallbackButton(text=text, payload=f"menu:{callback}"))
-        buttons_rows.append(row)
     
-    # Отдельные кнопки поиска, истории
-    buttons_rows.append([CallbackButton(text="🔢 Поиск по номеру", payload="menu:SEARCH"),
-                         CallbackButton(text="🔍 Поиск по названию", payload="menu:TEXT_SEARCH")])
-    buttons_rows.append([CallbackButton(text="📅 История", payload="menu:HISTORY"),
-                         CallbackButton(text="❓ Помощь", payload="menu:HELP")])
+    # Каждая категория на отдельной строке
+    for text, callback in CATEGORIES.items():
+        buttons_rows.append([CallbackButton(text=text, payload=f"cat:{callback}")])
+    
+    # Отдельные кнопки
+    buttons_rows.append([
+        CallbackButton(text="🔢 Поиск по номеру", payload="menu:SEARCH"),
+        CallbackButton(text="🔍 Поиск по названию", payload="menu:TEXT_SEARCH")
+    ])
+    buttons_rows.append([
+        CallbackButton(text="📅 История", payload="menu:HISTORY"),
+        CallbackButton(text="❓ Помощь", payload="menu:HELP")
+    ])
     
     return _build_keyboard(buttons_rows)
 
-# --- МЕНЮ ВИДОВ РАБОТ ---
-def get_actions_menu(device: str):
-    # print('+++get_actions_menu+++')
+
+# def get_main_menu():
+#     buttons_rows = []
+    
+#     category_items = list(CATEGORIES.items())
+#     for i in range(0, len(category_items), 2):
+#         row = []
+#         for text, callback in category_items[i:i+2]:
+#             row.append(CallbackButton(text=text, payload=f"cat:{callback}"))
+#         buttons_rows.append(row)
+    
+#     buttons_rows.append([
+#         CallbackButton(text="🔢 Поиск по номеру", payload="menu:SEARCH"),
+#         CallbackButton(text="🔍 Поиск по названию", payload="menu:TEXT_SEARCH")
+#     ])
+#     buttons_rows.append([
+#         CallbackButton(text="📅 История", payload="menu:HISTORY"),
+#         CallbackButton(text="❓ Помощь", payload="menu:HELP")
+#     ])
+    
+#     return _build_keyboard(buttons_rows)
+
+
+# ========== ПОДМЕНЮ: УСТРОЙСТВА В КАТЕГОРИИ ==========
+def get_devices_menu(category_code: str):
+    devices = CATEGORY_DEVICES.get(category_code, [])
     buttons_rows = []
-    for text, callback in ACTION_BUTTONS.items():
-        # print(f'device: {device}')
-        # print(f'text: {text}')
-        # print(f'callback: {callback}')
-        buttons_rows.append([CallbackButton(text=text, payload=f"action:{device}:{callback}")])
-    buttons_rows.append([CallbackButton(text="🔙 Назад", payload="menu:BACK_TO_MAIN")])
+    
+    for device in devices:
+        short_name = device[:40] + "..." if len(device) > 40 else device
+        buttons_rows.append([CallbackButton(text=f"📟 {short_name}", payload=f"device:{device}")])
+    
+    buttons_rows.append([CallbackButton(text="🔙 Назад в главное меню", payload="menu:MAIN")])
+    
     return _build_keyboard(buttons_rows)
 
-# --- МЕНЮ СО СПИСКОМ ДОКУМЕНТОВ ---
-def get_documents_menu(docs: list, device: str, action_code: str, page: int = 0, total: int = 0, has_more: bool = False):
+
+# ========== МЕНЮ СО СПИСКОМ ДОКУМЕНТОВ (ТНК/КТП) ==========
+def get_documents_menu(docs: list, device: str, page: int = 0, total: int = 0, has_more: bool = False):
     buttons_rows = []
+    
     for doc in docs:
-        short_name = doc['name'][:35] + "..." if len(doc['name']) > 35 else doc['name']
         doc_number = doc.get('file_name') or doc.get('number') or f"Документ #{doc['id']}"
-        text = f"📄 {doc_number} - {short_name}"    
-        # short_name = doc['name'][:35] + "..." if len(doc['name']) > 35 else doc['name']
-        # text = f"📄 {doc['number']} - {short_name}"
-        buttons_rows.append([CallbackButton(text=text, payload=f"doc:{doc['id']}")])
+        short_name = doc['name'][:25] + "..." if len(doc['name']) > 25 else doc['name']
+        
+        # Две кнопки в строке: [📄 краткое_название] [ℹ️]
+        buttons_rows.append([
+            CallbackButton(text=f"📄 {doc_number}", payload=f"doc:{doc['id']}"),
+            CallbackButton(text="ℹ️", payload=f"doc_preview:{doc['id']}")
+        ])
     
-    # Навигация
+    # Навигация по страницам
     nav_buttons = []
     if page > 0:
-        nav_buttons.append(CallbackButton(text="◀ Назад", payload=f"page:{device}:{action_code}:{page-1}"))
+        nav_buttons.append(CallbackButton(text="◀ Назад", payload=f"page:{device}:{page-1}"))
     if has_more:
-        nav_buttons.append(CallbackButton(text="Вперед ▶", payload=f"page:{device}:{action_code}:{page+1}"))
+        nav_buttons.append(CallbackButton(text="Вперед ▶", payload=f"page:{device}:{page+1}"))
     if nav_buttons:
         buttons_rows.append(nav_buttons)
     
-    buttons_rows.append([CallbackButton(text="🔙 Назад к видам работ", payload=f"back_to_actions:{device}")])
+    buttons_rows.append([CallbackButton(text="🔙 Назад к устройствам", payload="back_to_devices")])
     buttons_rows.append([CallbackButton(text="🏠 Главное меню", payload="menu:MAIN")])
+    
     return _build_keyboard(buttons_rows)
 
-# --- КАРТОЧКА ДОКУМЕНТА ---
+
+# def get_documents_menu(docs: list, device: str, page: int = 0, total: int = 0, has_more: bool = False):
+#     buttons_rows = []
+    
+#     for doc in docs:
+#         doc_number = doc.get('file_name') or doc.get('number') or f"Документ #{doc['id']}"
+#         short_name = doc['name'][:35] + "..." if len(doc['name']) > 35 else doc['name']
+#         text = f"📄 {doc_number} - {short_name}"
+#         buttons_rows.append([CallbackButton(text=text, payload=f"doc:{doc['id']}")])
+    
+#     # Навигация по страницам
+#     nav_buttons = []
+#     if page > 0:
+#         nav_buttons.append(CallbackButton(text="◀ Назад", payload=f"page:{device}:{page-1}"))
+#     if has_more:
+#         nav_buttons.append(CallbackButton(text="Вперед ▶", payload=f"page:{device}:{page+1}"))
+#     if nav_buttons:
+#         buttons_rows.append(nav_buttons)
+    
+#     buttons_rows.append([CallbackButton(text="🔙 Назад к устройствам", payload="back_to_devices")])
+#     buttons_rows.append([CallbackButton(text="🏠 Главное меню", payload="menu:MAIN")])
+    
+#     return _build_keyboard(buttons_rows)
+
+
+# ========== КАРТОЧКА ДОКУМЕНТА ==========
 def get_document_card(doc: dict, is_favorite: bool = False):
     buttons_rows = []
     buttons_rows.append([CallbackButton(text="📎 Скачать файл", payload=f"download:{doc['id']}")])
@@ -77,14 +130,16 @@ def get_document_card(doc: dict, is_favorite: bool = False):
     buttons_rows.append([CallbackButton(text=fav_text, payload=f"favorite:{fav_action}:{doc['id']}")])
     buttons_rows.append([CallbackButton(text="🔙 Назад к списку", payload="back_to_list")])
     buttons_rows.append([CallbackButton(text="🏠 Главное меню", payload="menu:MAIN")])
+    
     return _build_keyboard(buttons_rows)
 
-# --- КНОПКА "НАЗАД" ---
-def get_back_keyboard():
-    return _build_keyboard([[CallbackButton(text="🔙 Назад", payload="menu:BACK_TO_MAIN")]])
 
-# --- КЛАВИАТУРА ДЛЯ ПОИСКА ПО НОМЕРУ ---
-def get_search_number_keyboard(current_number: str = ""):
+# ========== ВСПОМОГАТЕЛЬНЫЕ КЛАВИАТУРЫ ==========
+def get_back_keyboard():
+    return _build_keyboard([[CallbackButton(text="🔙 Назад", payload="menu:MAIN")]])
+
+
+def get_search_number_keyboard():
     buttons_rows = [
         [CallbackButton(text="1", payload="search_number:digit:1"),
          CallbackButton(text="2", payload="search_number:digit:2"),
@@ -102,16 +157,6 @@ def get_search_number_keyboard(current_number: str = ""):
     ]
     return _build_keyboard(buttons_rows)
 
-# --- КЛАВИАТУРА ПОМОЩИ ---
+
 def get_help_keyboard():
     return _build_keyboard([[CallbackButton(text="🏠 Главное меню", payload="menu:MAIN")]])
-
-
-# Главное меню
-builder_start = InlineKeyboardBuilder()
-
-# Кнопки ТНК
-builder_start.row(
-    CallbackButton(text="ТНК СЦБ", payload="scb"),
-    CallbackButton(text="ТНК ГАЦ", payload="gac")
-)
