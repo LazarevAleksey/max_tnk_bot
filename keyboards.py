@@ -73,13 +73,17 @@ def get_documents_menu(docs: list, device: str, page: int = 0, total: int = 0, h
     
     for doc in docs:
         doc_number = doc.get('file_name') or doc.get('number') or f"Документ #{doc['id']}"
-        short_name = doc['name'][:25] + "..." if len(doc['name']) > 25 else doc['name']
+        short_name = doc['name'][:37] + "..." if len(doc['name']) > 37 else doc['name']
         
         # Две кнопки в строке: [📄 краткое_название] [ℹ️]
-        buttons_rows.append([
-            CallbackButton(text=f"📄 {doc_number}", payload=f"doc:{doc['id']}"),
-            CallbackButton(text="ℹ️", payload=f"doc_preview:{doc['id']}")
-        ])
+        # buttons_rows.append([
+        #     # CallbackButton(text=f"📄 {doc_number}", payload=f"doc:{doc['id']}"),
+        #     CallbackButton(text=f"📄 {short_name}", payload=f"doc:{doc['id']}"),
+        #     # CallbackButton(text="ℹ️", payload=f"doc_preview:{doc['id']}")
+        # ])
+
+        buttons_rows.append([CallbackButton(text=f"📄 {short_name}", payload=f"doc:{doc['id']}")])
+        buttons_rows.append([CallbackButton(text="ℹ️ Показать описание", payload=f"doc_preview:{doc['id']}")])   
     
     # Навигация по страницам
     nav_buttons = []

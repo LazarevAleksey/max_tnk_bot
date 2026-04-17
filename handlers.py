@@ -22,6 +22,8 @@ user_favorites = {}
 user_history = {}
 search_states = {}
 user_last_device = {}  # для возврата к списку документов
+user_docs_list = {}      # список документов для текущего пользователя
+user_current_page = {}   # текущая страница
 
 
 # ==================== Обработчики ====================
@@ -57,6 +59,54 @@ async def cmd_help(event: MessageCreated):
     await event.message.answer(text=help_text, attachments=[get_help_keyboard()])
 
 
+async def show_docs_page(event, user_id, device_name, page):
+    from maxapi.types.attachments.buttons import CallbackButton
+    from maxapi.utils.inline_keyboard import InlineKeyboardBuilder
+    
+    docs = user_docs_list.get(user_id, [])
+    total = len(docs)
+    items_per_page = 10
+    start = page * items_per_page
+    end = min(start + items_per_page, total)
+    page_docs = docs[start:end]
+    
+    text = f"📄 *{device_name}*\n\n"
+    text += f"📋 Всего документов: {total}\n"
+    text += "➖" * 20 + "\n\n"
+    
+    for i, doc in enumerate(page_docs, start=start + 1):
+        doc_number = doc.get('file_name') or doc.get('number') or f"Док #{doc['id']}"
+        text += f"*{i}.* 📄 *{doc_number}*\n"
+        full_name = doc.get('name', 'Без названия')
+        text += f"   {full_name}\n\n"
+    
+    total_pages = (total + items_per_page - 1) // items_per_page
+    text += "➖" * 20 + "\n"
+    text += f"📄 Страница {page + 1} из {total_pages}\n\n"
+    text += "✏️ *Введите номер документа* (например, `5`) для просмотра карточки.\n"
+    text += "🔢 Или введите номер ТНК/КТП для поиска."
+    
+    builder = InlineKeyboardBuilder()
+    
+    nav_buttons = []
+    if page > 0:
+        nav_buttons.append(CallbackButton(text="◀ Назад", payload=f"docs_page:{device_name}:{page-1}"))
+    if end < total:
+        nav_buttons.append(CallbackButton(text="Вперед ▶", payload=f"docs_page:{device_name}:{page+1}"))
+    
+    if nav_buttons:
+        builder.row(*nav_buttons)
+    
+    builder.row(CallbackButton(text="🔙 Назад к устройствам", payload="back_to_devices"))
+    builder.row(CallbackButton(text="🏠 Главное меню", payload="menu:MAIN"))
+    
+    await event.bot.edit_message(
+        message_id=event.message.body.mid,
+        text=text,
+        attachments=[builder.as_markup()]
+    )
+
+
 @dp.message_callback()
 async def handle_callback(event: MessageCallback):
     chat_id, user_id = event.get_ids()
@@ -65,6 +115,14 @@ async def handle_callback(event: MessageCallback):
     if not data:
         return
     
+    elif data.startswith("docs_page:"):
+        parts = data.split(":")
+        if len(parts) >= 3:
+            device_name = parts[1]
+            page = int(parts[2])
+            user_current_page[user_id] = page
+            await show_docs_page(event, user_id, device_name, page)
+
     # elif data.startswith("doc_preview:"):
     #     doc_id = int(data.split(":")[1])
     #     doc = doc_loader.get_document_by_id(doc_id)
@@ -230,22 +288,43 @@ async def handle_callback(event: MessageCallback):
             attachments=[get_devices_menu(category_code)]
         )
     
-    # ========== ВЫБОР УСТРОЙСТВА → СРАЗУ СПИСОК ТНК ==========
+    # # ========== ВЫБОР УСТРОЙСТВА → СРАЗУ СПИСОК ТНК ==========
+    # elif data.startswith("device:"):
+    #     device_name = data.split(":", 1)[1]  # берём всё после "device:"
+    #     user_last_device[user_id] = device_name
+        
+    #     # Получаем все документы для этого устройства (без фильтра по действию)
+    #     docs = doc_loader.get_documents(device=device_name, limit=ITEMS_PER_PAGE, offset=0)
+    #     total = doc_loader.get_documents_count(device=device_name)
+    #     has_more = len(docs) == ITEMS_PER_PAGE
+        
+    #     if docs:
+    #         await event.bot.edit_message(
+    #             message_id=event.message.body.mid,
+    #             text=f"📄 *{device_name}*\n\nНайдено документов: {total}\n\nВыберите ТНК/КТП:",
+    #             attachments=[get_documents_menu(docs, device_name, 0, total, has_more)]
+    #         )
+    #     else:
+    #         await event.bot.edit_message(
+    #             message_id=event.message.body.mid,
+    #             text=f"📄 *{device_name}*\n\n❌ Документы не найдены",
+    #             attachments=[get_back_keyboard()]
+    #         )
+    # ========== ВЫБОР УСТРОЙСТВА → ТЕКСТОВЫЙ СПИСОК ==========
     elif data.startswith("device:"):
-        device_name = data.split(":", 1)[1]  # берём всё после "device:"
+        device_name = data.split(":", 1)[1]
         user_last_device[user_id] = device_name
         
-        # Получаем все документы для этого устройства (без фильтра по действию)
-        docs = doc_loader.get_documents(device=device_name, limit=ITEMS_PER_PAGE, offset=0)
-        total = doc_loader.get_documents_count(device=device_name)
-        has_more = len(docs) == ITEMS_PER_PAGE
+        # Получаем все документы для этого устройства
+        docs = doc_loader.get_documents(device=device_name, limit=10000, offset=0)
+        total = len(docs)
         
         if docs:
-            await event.bot.edit_message(
-                message_id=event.message.body.mid,
-                text=f"📄 *{device_name}*\n\nНайдено документов: {total}\n\nВыберите ТНК/КТП:",
-                attachments=[get_documents_menu(docs, device_name, 0, total, has_more)]
-            )
+            # Сохраняем список документов для пользователя
+            user_docs_list[user_id] = docs
+            user_current_page[user_id] = 0
+            
+            await show_docs_page(event, user_id, device_name, 0)
         else:
             await event.bot.edit_message(
                 message_id=event.message.body.mid,
@@ -441,3 +520,56 @@ async def handle_callback(event: MessageCallback):
                         )
                     
                     del search_states[user_id]
+
+@dp.message_created()
+async def handle_text_input(event: MessageCreated):
+    user_id = event.message.body.mid
+    # text = event.message.text.strip()
+    text = event.message.body.text.strip()
+    # text = event.message.body.text.strip()
+    
+    if user_id in user_docs_list and text.isdigit():
+        doc_num = int(text)
+        docs = user_docs_list.get(user_id, [])
+        
+        if 1 <= doc_num <= len(docs):
+            doc = docs[doc_num - 1]
+            
+            if user_id not in user_history:
+                user_history[user_id] = []
+            if doc['id'] not in user_history[user_id]:
+                user_history[user_id].append(doc['id'])
+                if len(user_history[user_id]) > 50:
+                    user_history[user_id] = user_history[user_id][-50:]
+            
+            is_favorite = user_id in user_favorites and doc['id'] in user_favorites[user_id]
+            
+            card_text = (
+                f"📄 *{doc.get('file_name', doc.get('number', 'Документ'))}*\n\n"
+                f"🏷️ *Название:* {doc['name']}\n"
+                f"👥 *Исполнители:* {doc.get('executors', '—')}\n"
+                f"📋 *Оформление:* {doc.get('design', '—')}\n"
+                f"📅 *Введён:* {doc.get('order_number', '—')}"
+            )
+            
+            await event.message.answer(
+                text=card_text,
+                attachments=[get_document_card(doc, is_favorite)]
+            )
+        else:
+            await event.message.answer(f"❌ Неверный номер. Введите число от 1 до {len(docs)}")
+    else:
+        results = doc_loader.search_by_number(text)
+        if results:
+            result_text = f"🔍 *Результаты поиска по номеру «{text}»:*\n\n"
+            for doc in results[:10]:
+                result_text += f"📄 {doc.get('file_name', doc.get('number', '?'))}\n"
+                result_text += f"   {doc['name'][:80]}\n\n"
+            await event.message.answer(result_text)
+        else:
+            docs_len = len(user_docs_list.get(user_id, []))
+            await event.message.answer(
+                f"❌ Ничего не найдено.\n\n"
+                f"Введите номер документа из списка (1-{docs_len})\n"
+                f"или номер ТНК/КТП для поиска."
+            )
