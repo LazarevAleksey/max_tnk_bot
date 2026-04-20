@@ -12,6 +12,11 @@ from keyboards import (
     get_back_keyboard, get_search_number_keyboard, get_help_keyboard,
     get_devices_menu
 )
+from class_upload_file_max import MaxBot
+from config_links import BOT_TOKEN
+
+# Создайте экземпляр MaxBot (после импортов, до обработчиков)
+max_bot = MaxBot(BOT_TOKEN)
 
 logger = logging.getLogger(__name__)
 
@@ -24,6 +29,34 @@ search_states = {}
 user_last_device = {}  # для возврата к списку документов
 user_docs_list = {}      # список документов для текущего пользователя
 user_current_page = {}   # текущая страница
+
+
+
+def convert_filename_to_pdf(file_name: str) -> str:
+    """
+    Преобразует имя файла из ТНК ЦШ 0147-2022 в 0147.pdf
+    Примеры:
+        ТНК ЦШ 0147-2022 -> 0147.pdf
+        ТНК ЦШ 0150-2017 -> 0150.pdf
+        КТП ЦШ 1024-2019 -> 1024.pdf
+        КТП ЦШ 0884-2018 -> 0884.pdf
+    """
+    import re
+    
+    # Ищем 4-значное число в имени файла
+    match = re.search(r'\b(\d{4})\b', file_name)
+    if match:
+        number = match.group(1)  # '0147'
+        return f"{number}.pdf"
+    
+    # Если не нашли 4 цифры, ищем 3 цифры (для старых форматов)
+    match = re.search(r'\b(\d{3})\b', file_name)
+    if match:
+        number = match.group(1)
+        return f"{number}.pdf"
+    
+    # Если ничего не нашли, возвращаем исходное имя (как запасной вариант)
+    return file_name
 
 
 # ==================== Обработчики ====================
@@ -310,6 +343,8 @@ async def handle_callback(event: MessageCallback):
     #             text=f"📄 *{device_name}*\n\n❌ Документы не найдены",
     #             attachments=[get_back_keyboard()]
     #         )
+
+
     # ========== ВЫБОР УСТРОЙСТВА → ТЕКСТОВЫЙ СПИСОК ==========
     elif data.startswith("device:"):
         device_name = data.split(":", 1)[1]
@@ -390,28 +425,74 @@ async def handle_callback(event: MessageCallback):
                 attachments=[get_document_card(doc, is_favorite)]
             )
     
+    
     # ========== СКАЧИВАНИЕ ==========
     elif data.startswith("download:"):
         doc_id = int(data.split(":")[1])
         doc = doc_loader.get_document_by_id(doc_id)
         
         if doc and doc.get('file_name'):
-            file_path = os.path.join(PDF_FOLDER, doc['file_name'])
+            # Преобразуем имя файла из "ТНК ЦШ 0147-2022" в "0147.pdf"
+            pdf_filename = convert_filename_to_pdf(doc['file_name'])
+            file_path = os.path.join(PDF_FOLDER, pdf_filename)
+
+        
+            # # ДИАГНОСТИКА: выводим список файлов в папке
+            # print(f"📁 Содержимое папки {PDF_FOLDER}:")
+            # if os.path.exists(PDF_FOLDER):
+            #     for f in os.listdir(PDF_FOLDER):
+            #         print(f"   - {f}")
+            # else:
+            #     print(f"   ❌ Папка {PDF_FOLDER} не существует")
+
             
+            print(f"Оригинальное имя: {doc['file_name']}")
+            print(f"Ищем файл: {file_path}")
             if os.path.exists(file_path):
                 try:
-                    await event.bot.send_file(
-                        chat_id=chat_id,
+                    # Используем MaxBot для отправки файла
+                    success = max_bot.send_file_to_user(
+                        user_id=user_id,
                         file_path=file_path,
-                        filename=doc['file_name'],
-                        caption=f"📎 {doc.get('file_name', doc.get('number', 'Документ'))}\n{doc.get('name', 'Без названия')}"
+                        message_text=f"📎 {doc.get('file_name', doc.get('number', 'Документ'))}\n{doc.get('name', 'Без названия')}"
                     )
-                    await event.answer("✅ Файл отправлен")
+                    
+                    if success:
+                        await event.answer("✅ Файл отправлен")
+                    else:
+                        await event.answer("❌ Ошибка при отправке файла")
+                        
                 except Exception as e:
                     logger.error(f"Ошибка отправки файла: {e}")
                     await event.answer("❌ Ошибка при отправке файла")
             else:
-                await event.answer(f"❌ Файл не найден: {doc['file_name']}")
+                await event.answer(f"❌ Файл не найден: {pdf_filename}")
+        else:
+            await event.answer("❌ Документ не найден")
+    
+    
+    # # ========== СКАЧИВАНИЕ ==========
+    # elif data.startswith("download:"):
+    #     doc_id = int(data.split(":")[1])
+    #     doc = doc_loader.get_document_by_id(doc_id)
+        
+    #     if doc and doc.get('file_name'):
+    #         file_path = os.path.join(PDF_FOLDER, doc['file_name'])
+            
+    #         if os.path.exists(file_path):
+    #             try:
+    #                 await event.bot.send_file(
+    #                     chat_id=chat_id,
+    #                     file_path=file_path,
+    #                     filename=doc['file_name'],
+    #                     caption=f"📎 {doc.get('file_name', doc.get('number', 'Документ'))}\n{doc.get('name', 'Без названия')}"
+    #                 )
+    #                 await event.answer("✅ Файл отправлен")
+    #             except Exception as e:
+    #                 logger.error(f"Ошибка отправки файла: {e}")
+    #                 await event.answer("❌ Ошибка при отправке файла")
+    #         else:
+    #             await event.answer(f"❌ Файл не найден: {doc['file_name']}")
     
     # ========== ИЗБРАННОЕ ==========
     elif data.startswith("favorite:"):
@@ -444,6 +525,7 @@ async def handle_callback(event: MessageCallback):
     # ========== ВОЗВРАТ К СПИСКУ ДОКУМЕНТОВ ==========
     elif data.startswith("back_to_list"):
         device_name = user_last_device.get(user_id)
+        print(f'device_name: ')
         if device_name:
             docs = doc_loader.get_documents(device=device_name, limit=ITEMS_PER_PAGE, offset=0)
             total = doc_loader.get_documents_count(device=device_name)
@@ -455,6 +537,7 @@ async def handle_callback(event: MessageCallback):
                 attachments=[get_documents_menu(docs, device_name, 0, total, has_more)]
             )
         else:
+            print('get_main_menu!!!')
             await event.bot.edit_message(
                 message_id=event.message.body.mid,
                 text="🏠 *Главное меню*\n\nВыберите категорию:",
@@ -523,10 +606,12 @@ async def handle_callback(event: MessageCallback):
 
 @dp.message_created()
 async def handle_text_input(event: MessageCreated):
-    user_id = event.message.body.mid
-    # text = event.message.text.strip()
+    # user_id = event.message.body.mid
+    chat_id, user_id = event.get_ids() 
     text = event.message.body.text.strip()
-    # text = event.message.body.text.strip()
+
+    print(f'user_id: {user_id}, text: {text}')
+    #print(f'user_docs_list: {user_docs_list}')
     
     if user_id in user_docs_list and text.isdigit():
         doc_num = int(text)
@@ -568,6 +653,7 @@ async def handle_text_input(event: MessageCreated):
             await event.message.answer(result_text)
         else:
             docs_len = len(user_docs_list.get(user_id, []))
+            print(f'docs_len: {docs_len}, user_is: {user_id}')
             await event.message.answer(
                 f"❌ Ничего не найдено.\n\n"
                 f"Введите номер документа из списка (1-{docs_len})\n"

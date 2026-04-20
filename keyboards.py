@@ -31,28 +31,6 @@ def get_main_menu():
     return _build_keyboard(buttons_rows)
 
 
-# def get_main_menu():
-#     buttons_rows = []
-    
-#     category_items = list(CATEGORIES.items())
-#     for i in range(0, len(category_items), 2):
-#         row = []
-#         for text, callback in category_items[i:i+2]:
-#             row.append(CallbackButton(text=text, payload=f"cat:{callback}"))
-#         buttons_rows.append(row)
-    
-#     buttons_rows.append([
-#         CallbackButton(text="🔢 Поиск по номеру", payload="menu:SEARCH"),
-#         CallbackButton(text="🔍 Поиск по названию", payload="menu:TEXT_SEARCH")
-#     ])
-#     buttons_rows.append([
-#         CallbackButton(text="📅 История", payload="menu:HISTORY"),
-#         CallbackButton(text="❓ Помощь", payload="menu:HELP")
-#     ])
-    
-#     return _build_keyboard(buttons_rows)
-
-
 # ========== ПОДМЕНЮ: УСТРОЙСТВА В КАТЕГОРИИ ==========
 def get_devices_menu(category_code: str):
     devices = CATEGORY_DEVICES.get(category_code, [])
@@ -83,7 +61,7 @@ def get_documents_menu(docs: list, device: str, page: int = 0, total: int = 0, h
         # ])
 
         buttons_rows.append([CallbackButton(text=f"📄 {short_name}", payload=f"doc:{doc['id']}")])
-        buttons_rows.append([CallbackButton(text="ℹ️ Показать описание", payload=f"doc_preview:{doc['id']}")])   
+        # buttons_rows.append([CallbackButton(text="ℹ️ Показать описание", payload=f"doc_preview:{doc['id']}")])   
     
     # Навигация по страницам
     nav_buttons = []
@@ -98,30 +76,6 @@ def get_documents_menu(docs: list, device: str, page: int = 0, total: int = 0, h
     buttons_rows.append([CallbackButton(text="🏠 Главное меню", payload="menu:MAIN")])
     
     return _build_keyboard(buttons_rows)
-
-
-# def get_documents_menu(docs: list, device: str, page: int = 0, total: int = 0, has_more: bool = False):
-#     buttons_rows = []
-    
-#     for doc in docs:
-#         doc_number = doc.get('file_name') or doc.get('number') or f"Документ #{doc['id']}"
-#         short_name = doc['name'][:35] + "..." if len(doc['name']) > 35 else doc['name']
-#         text = f"📄 {doc_number} - {short_name}"
-#         buttons_rows.append([CallbackButton(text=text, payload=f"doc:{doc['id']}")])
-    
-#     # Навигация по страницам
-#     nav_buttons = []
-#     if page > 0:
-#         nav_buttons.append(CallbackButton(text="◀ Назад", payload=f"page:{device}:{page-1}"))
-#     if has_more:
-#         nav_buttons.append(CallbackButton(text="Вперед ▶", payload=f"page:{device}:{page+1}"))
-#     if nav_buttons:
-#         buttons_rows.append(nav_buttons)
-    
-#     buttons_rows.append([CallbackButton(text="🔙 Назад к устройствам", payload="back_to_devices")])
-#     buttons_rows.append([CallbackButton(text="🏠 Главное меню", payload="menu:MAIN")])
-    
-#     return _build_keyboard(buttons_rows)
 
 
 # ========== КАРТОЧКА ДОКУМЕНТА ==========
