@@ -92,6 +92,53 @@ async def cmd_help(event: MessageCreated):
     await event.message.answer(text=help_text, attachments=[get_help_keyboard()])
 
 
+# async def show_docs_page(event, user_id, device_name, page):
+#     from maxapi.types.attachments.buttons import CallbackButton
+#     from maxapi.utils.inline_keyboard import InlineKeyboardBuilder
+    
+#     docs = user_docs_list.get(user_id, [])
+#     total = len(docs)
+#     items_per_page = 10
+#     start = page * items_per_page
+#     end = min(start + items_per_page, total)
+#     page_docs = docs[start:end]
+    
+#     text = f"📄 *{device_name}*\n\n"
+#     text += f"📋 Всего документов: {total}\n"
+#     text += "➖" * 20 + "\n\n"
+    
+#     for i, doc in enumerate(page_docs, start=start + 1):
+#         doc_number = doc.get('file_name') or doc.get('number') or f"Док #{doc['id']}"
+#         text += f"*{i}.* 📄 *{doc_number}*\n"
+#         full_name = doc.get('name', 'Без названия')
+#         text += f"   {full_name}\n\n"
+    
+#     total_pages = (total + items_per_page - 1) // items_per_page
+#     text += "➖" * 20 + "\n"
+#     text += f"📄 Страница {page + 1} из {total_pages}\n\n"
+#     text += "✏️ *Введите номер документа* (например, `5`) для просмотра карточки.\n"
+#     text += "🔢 Или введите номер ТНК/КТП для поиска."
+    
+#     builder = InlineKeyboardBuilder()
+    
+#     nav_buttons = []
+#     if page > 0:
+#         nav_buttons.append(CallbackButton(text="◀ Назад", payload=f"docs_page:{device_name}:{page-1}"))
+#     if end < total:
+#         nav_buttons.append(CallbackButton(text="Вперед ▶", payload=f"docs_page:{device_name}:{page+1}"))
+    
+#     if nav_buttons:
+#         builder.row(*nav_buttons)
+    
+#     builder.row(CallbackButton(text="🔙 Назад к устройствам", payload="back_to_devices"))
+#     builder.row(CallbackButton(text="🏠 Главное меню", payload="menu:MAIN"))
+    
+#     await event.bot.edit_message(
+#         message_id=event.message.body.mid,
+#         text=text,
+#         attachments=[builder.as_markup()]
+#     )
+
 async def show_docs_page(event, user_id, device_name, page):
     from maxapi.types.attachments.buttons import CallbackButton
     from maxapi.utils.inline_keyboard import InlineKeyboardBuilder
@@ -103,24 +150,39 @@ async def show_docs_page(event, user_id, device_name, page):
     end = min(start + items_per_page, total)
     page_docs = docs[start:end]
     
+    # ТЕКСТОВЫЙ СПИСОК с полными названиями
     text = f"📄 *{device_name}*\n\n"
     text += f"📋 Всего документов: {total}\n"
     text += "➖" * 20 + "\n\n"
     
     for i, doc in enumerate(page_docs, start=start + 1):
         doc_number = doc.get('file_name') or doc.get('number') or f"Док #{doc['id']}"
-        text += f"*{i}.* 📄 *{doc_number}*\n"
         full_name = doc.get('name', 'Без названия')
+        text += f"*{i}.* 📄 *{doc_number}*\n"
         text += f"   {full_name}\n\n"
     
     total_pages = (total + items_per_page - 1) // items_per_page
     text += "➖" * 20 + "\n"
     text += f"📄 Страница {page + 1} из {total_pages}\n\n"
-    text += "✏️ *Введите номер документа* (например, `5`) для просмотра карточки.\n"
-    text += "🔢 Или введите номер ТНК/КТП для поиска."
+    text += "📌 *Нажмите на кнопку с номером для скачивания:*\n"
     
+    # КНОПКИ ТОЛЬКО С НОМЕРАМИ (без пробела после иконки)
     builder = InlineKeyboardBuilder()
     
+    row_buttons = []
+    for i, doc in enumerate(page_docs, start=start + 1):
+        row_buttons.append(CallbackButton(text=f"⤓{i}", payload=f"download:{doc['id']}"))
+        
+        # Группируем по 5 кнопок в строку
+        if len(row_buttons) == 5:
+            builder.row(*row_buttons)
+            row_buttons = []
+    
+    # Оставшиеся кнопки
+    if row_buttons:
+        builder.row(*row_buttons)
+    
+    # Навигация
     nav_buttons = []
     if page > 0:
         nav_buttons.append(CallbackButton(text="◀ Назад", payload=f"docs_page:{device_name}:{page-1}"))
@@ -138,7 +200,6 @@ async def show_docs_page(event, user_id, device_name, page):
         text=text,
         attachments=[builder.as_markup()]
     )
-
 
 @dp.message_callback()
 async def handle_callback(event: MessageCallback):
