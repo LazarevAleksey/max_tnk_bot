@@ -325,19 +325,44 @@ async def handle_callback(event: MessageCallback):
                 attachments=[get_main_menu()]
             )
         
+        # elif action == "SEARCH":
+        #     search_states[user_id] = "waiting_number"
+        #     await event.bot.edit_message(
+        #         message_id=event.message.body.mid,
+        #         text="🔢 *Поиск по номеру документа*\n\n"
+        #              "Введите номер ТНК или КТП.\n\n"
+        #              "📝 *Примеры:*\n"
+        #              "• `0111`\n"
+        #              "• `ЦП 0111-2022`\n\n"
+        #              "Используйте клавиатуру:",
+        #         attachments=[get_search_number_keyboard()]
+        #     )
+
         elif action == "SEARCH":
-            search_states[user_id] = "waiting_number"
+            search_states[user_id] = {"mode": "number", "value": ""}
             await event.bot.edit_message(
                 message_id=event.message.body.mid,
                 text="🔢 *Поиск по номеру документа*\n\n"
-                     "Введите номер ТНК или КТП.\n\n"
-                     "📝 *Примеры:*\n"
-                     "• `0111`\n"
-                     "• `ЦП 0111-2022`\n\n"
-                     "Используйте клавиатуру:",
+                    "Введите номер ТНК или КТП.\n\n"
+                    "📝 *Примеры:*\n"
+                    "• `0147`\n"
+                    "• `ТНК ЦШ 0147-2022`\n\n"
+                    "Используйте клавиатуру:",
                 attachments=[get_search_number_keyboard()]
             )
-        
+
+        elif action == "TEXT_SEARCH":
+            search_states[user_id] = {"mode": "text", "value": ""}
+            await event.bot.edit_message(
+                message_id=event.message.body.mid,
+                text="🔍 *Поиск по названию документа*\n\n"
+                    "Введите слово или фразу из названия.\n\n"
+                    "📝 *Пример:*\n"
+                    "• `проверка видимости`\n\n"
+                    "✏️ Введите текст:",
+                attachments=[get_back_keyboard()]
+            )
+            
         elif action == "HISTORY":
             history = user_history.get(user_id, [])
             if history:
@@ -605,38 +630,57 @@ async def handle_callback(event: MessageCallback):
                 attachments=[get_main_menu()]
             )
     
-    # ========== ПОИСК ПО НОМЕРУ ==========
+    # ========== ПОИСК ПО НОМЕРУ (ЦИФРЫ) ==========
     elif data.startswith("search_number:"):
         parts = data.split(":")
         
         if len(parts) >= 2:
             action = parts[1]
             
+            # Получаем текущее состояние (словарь)
+            current_state = search_states.get(user_id, {})
+            if isinstance(current_state, str):
+                # Если вдруг осталась строка от старой версии — конвертируем
+                current_state = {"mode": "number", "value": current_state}
+            
+            current_value = current_state.get("value", "")
+            
             if action == "digit":
                 digit = parts[2]
-                current = search_states.get(user_id, "")
-                new_number = current + digit
-                search_states[user_id] = new_number
+                new_value = current_value + digit
+                search_states[user_id] = {"mode": "number", "value": new_value}
                 
                 await event.bot.edit_message(
                     message_id=event.message.body.mid,
-                    text=f"🔢 *Поиск по номеру*\n\nВведите номер: `{new_number}`\n\nИспользуйте клавиатуру:",
+                    text=f"🔢 *Поиск по номеру*\n\nВведите номер: `{new_value}`\n\nИспользуйте клавиатуру:",
                     attachments=[get_search_number_keyboard()]
                 )
             
             elif action == "backspace":
-                current = search_states.get(user_id, "")
-                new_number = current[:-1]
-                search_states[user_id] = new_number
+                new_value = current_value[:-1]
+                search_states[user_id] = {"mode": "number", "value": new_value}
                 
                 await event.bot.edit_message(
                     message_id=event.message.body.mid,
-                    text=f"🔢 *Поиск по номеру*\n\nВведите номер: `{new_number}`\n\nИспользуйте клавиатуру:",
+                    text=f"🔢 *Поиск по номеру*\n\nВведите номер: `{new_value}`\n\nИспользуйте клавиатуру:",
+                    attachments=[get_search_number_keyboard()]
+                )
+            
+            elif action == "clear":
+                search_states[user_id] = {"mode": "number", "value": ""}
+                await event.bot.edit_message(
+                    message_id=event.message.body.mid,
+                    text="🔢 *Поиск по номеру документа*\n\n"
+                        "Введите номер ТНК или КТП.\n\n"
+                        "📝 *Примеры:*\n"
+                        "• `0111`\n"
+                        "• `ЦП 0111-2022`\n\n"
+                        "Используйте клавиатуру:",
                     attachments=[get_search_number_keyboard()]
                 )
             
             elif action == "submit":
-                search_number = search_states.get(user_id, "")
+                search_number = current_value
                 
                 if search_number:
                     results = doc_loader.search_by_number(search_number)
@@ -649,6 +693,8 @@ async def handle_callback(event: MessageCallback):
                         builder = InlineKeyboardBuilder()
                         for doc in results[:10]:
                             builder.row(CallbackButton(text=doc.get('file_name', doc.get('number', f"Док #{doc['id']}"))[:30], payload=f"doc:{doc['id']}"))
+                        
+                        builder.row(CallbackButton(text="🔍 Новый поиск", payload="menu:SEARCH"))
                         builder.row(CallbackButton(text="🏠 Главное меню", payload="menu:MAIN"))
                         
                         await event.bot.edit_message(
@@ -660,10 +706,40 @@ async def handle_callback(event: MessageCallback):
                         await event.bot.edit_message(
                             message_id=event.message.body.mid,
                             text=f"❌ *Ничего не найдено* по номеру «{search_number}»\n\nПопробуйте снова:",
-                            attachments=[get_main_menu()]
+                            attachments=[get_search_number_keyboard()]
                         )
                     
                     del search_states[user_id]
+
+            # elif action == "submit":
+            #     search_number = search_states.get(user_id, "")
+                
+            #     if search_number:
+            #         results = doc_loader.search_by_number(search_number)
+                    
+            #         if results:
+            #             text = f"🔍 *Результаты поиска по номеру «{search_number}»:*\n\n"
+            #             for doc in results[:15]:
+            #                 text += f"📄 {doc.get('file_name', doc.get('number', '?'))}\n   {doc['name'][:50]}\n\n"
+                        
+            #             builder = InlineKeyboardBuilder()
+            #             for doc in results[:10]:
+            #                 builder.row(CallbackButton(text=doc.get('file_name', doc.get('number', f"Док #{doc['id']}"))[:30], payload=f"doc:{doc['id']}"))
+            #             builder.row(CallbackButton(text="🏠 Главное меню", payload="menu:MAIN"))
+                        
+            #             await event.bot.edit_message(
+            #                 message_id=event.message.body.mid,
+            #                 text=text,
+            #                 attachments=[builder.as_markup()]
+            #             )
+            #         else:
+            #             await event.bot.edit_message(
+            #                 message_id=event.message.body.mid,
+            #                 text=f"❌ *Ничего не найдено* по номеру «{search_number}»\n\nПопробуйте снова:",
+            #                 attachments=[get_main_menu()]
+            #             )
+                    
+            #         del search_states[user_id]
 
 @dp.message_created()
 async def handle_text_input(event: MessageCreated):

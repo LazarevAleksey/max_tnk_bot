@@ -97,6 +97,24 @@ def get_back_keyboard():
     return _build_keyboard([[CallbackButton(text="🔙 Назад", payload="menu:MAIN")]])
 
 
+# def get_search_number_keyboard():
+#     buttons_rows = [
+#         [CallbackButton(text="1", payload="search_number:digit:1"),
+#          CallbackButton(text="2", payload="search_number:digit:2"),
+#          CallbackButton(text="3", payload="search_number:digit:3")],
+#         [CallbackButton(text="4", payload="search_number:digit:4"),
+#          CallbackButton(text="5", payload="search_number:digit:5"),
+#          CallbackButton(text="6", payload="search_number:digit:6")],
+#         [CallbackButton(text="7", payload="search_number:digit:7"),
+#          CallbackButton(text="8", payload="search_number:digit:8"),
+#          CallbackButton(text="9", payload="search_number:digit:9")],
+#         [CallbackButton(text="0", payload="search_number:digit:0"),
+#          CallbackButton(text="⌫", payload="search_number:backspace"),
+#          CallbackButton(text="🔍 Искать", payload="search_number:submit")],
+#         [CallbackButton(text="🔙 Отмена", payload="menu:MAIN")]
+#     ]
+#     return _build_keyboard(buttons_rows)
+
 def get_search_number_keyboard():
     buttons_rows = [
         [CallbackButton(text="1", payload="search_number:digit:1"),
@@ -110,8 +128,9 @@ def get_search_number_keyboard():
          CallbackButton(text="9", payload="search_number:digit:9")],
         [CallbackButton(text="0", payload="search_number:digit:0"),
          CallbackButton(text="⌫", payload="search_number:backspace"),
-         CallbackButton(text="🔍 Искать", payload="search_number:submit")],
-        [CallbackButton(text="🔙 Отмена", payload="menu:MAIN")]
+         CallbackButton(text="🗑️ Очистить", payload="search_number:clear")],  # ← новая кнопка
+        [CallbackButton(text="🔍 Искать", payload="search_number:submit"),
+         CallbackButton(text="🔙 Отмена", payload="menu:MAIN")]
     ]
     return _build_keyboard(buttons_rows)
 
