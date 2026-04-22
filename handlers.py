@@ -29,6 +29,11 @@ search_states = {}
 user_last_device = {}  # для возврата к списку документов
 user_docs_list = {}      # список документов для текущего пользователя
 user_current_page = {}   # текущая страница
+user_search_results = {}      # результаты поиска
+user_search_page = {}         # текущая страница поиска
+user_search_mode = {}         # режим поиска ("text" или "number")
+user_search_query = {}        # текст запроса
+user_search_message_id = {}  # ID сообщения с результатами поиска
 
 
 
@@ -201,6 +206,69 @@ async def show_docs_page(event, user_id, device_name, page):
         attachments=[builder.as_markup()]
     )
 
+
+async def show_search_results(event, user_id, query, page):
+    from maxapi.types.attachments.buttons import CallbackButton
+    from maxapi.utils.inline_keyboard import InlineKeyboardBuilder
+    
+    results = user_search_results.get(user_id, [])
+    total = len(results)
+    items_per_page = 10
+    start = page * items_per_page
+    end = min(start + items_per_page, total)
+    page_results = results[start:end]
+    
+    mode = user_search_mode.get(user_id, "text")
+    mode_icon = "🔍" if mode == "text" else "🔢"
+    mode_name = "названию" if mode == "text" else "номеру"
+    
+    text = f"{mode_icon} *Результаты поиска по {mode_name} «{query}»:*\n\n"
+    text += f"📋 Всего найдено: {total}\n"
+    text += "➖" * 20 + "\n\n"
+    
+    for i, doc in enumerate(page_results, start=start + 1):
+        doc_number = doc.get('file_name') or doc.get('number') or f"Док #{doc['id']}"
+        full_name = doc.get('name', 'Без названия')
+        text += f"*{i}.* 📄 *{doc_number}*\n"
+        text += f"   {full_name[:80]}{'...' if len(full_name) > 80 else ''}\n\n"
+    
+    total_pages = (total + items_per_page - 1) // items_per_page
+    text += "➖" * 20 + "\n"
+    text += f"📄 Страница {page + 1} из {total_pages}\n\n"
+    text += "📌 *Нажмите на кнопку с номером для скачивания:*\n"
+    
+    builder = InlineKeyboardBuilder()
+    
+    row_buttons = []
+    for i, doc in enumerate(page_results, start=start + 1):
+        row_buttons.append(CallbackButton(text=f"⤓{i}", payload=f"download:{doc['id']}"))
+        if len(row_buttons) == 5:
+            builder.row(*row_buttons)
+            row_buttons = []
+    
+    if row_buttons:
+        builder.row(*row_buttons)
+    
+    nav_buttons = []
+    if page > 0:
+        nav_buttons.append(CallbackButton(text="◀ Назад", payload=f"search_page:{page-1}"))
+    if end < total:
+        nav_buttons.append(CallbackButton(text="Вперед ▶", payload=f"search_page:{page+1}"))
+    
+    if nav_buttons:
+        builder.row(*nav_buttons)
+    
+    builder.row(CallbackButton(text="🔍 Новый поиск", payload="menu:SEARCH"))
+    builder.row(CallbackButton(text="🔤 Поиск по названию", payload="menu:TEXT_SEARCH"))
+    builder.row(CallbackButton(text="🏠 Главное меню", payload="menu:MAIN"))
+    
+    # ОТПРАВЛЯЕМ НОВОЕ СООБЩЕНИЕ (не редактируем)
+    await event.message.answer(
+        text=text,
+        attachments=[builder.as_markup()]
+    )
+
+
 @dp.message_callback()
 async def handle_callback(event: MessageCallback):
     chat_id, user_id = event.get_ids()
@@ -216,6 +284,14 @@ async def handle_callback(event: MessageCallback):
             page = int(parts[2])
             user_current_page[user_id] = page
             await show_docs_page(event, user_id, device_name, page)
+
+    # ========== ПАГИНАЦИЯ РЕЗУЛЬТАТОВ ПОИСКА ==========
+    elif data.startswith("search_page:"):
+        page = int(data.split(":")[1])
+        query = user_search_query.get(user_id, "")
+        if query:
+            user_search_page[user_id] = page
+            await show_search_results(event, user_id, query, page)
 
     # elif data.startswith("doc_preview:"):
     #     doc_id = int(data.split(":")[1])
@@ -351,6 +427,18 @@ async def handle_callback(event: MessageCallback):
                 attachments=[get_search_number_keyboard()]
             )
 
+        # elif action == "TEXT_SEARCH":
+        #     search_states[user_id] = {"mode": "text", "value": ""}
+        #     await event.bot.edit_message(
+        #         message_id=event.message.body.mid,
+        #         text="🔍 *Поиск по названию документа*\n\n"
+        #             "Введите слово или фразу из названия.\n\n"
+        #             "📝 *Пример:*\n"
+        #             "• `проверка видимости`\n\n"
+        #             "✏️ Введите текст:",
+        #         attachments=[get_back_keyboard()]
+        #     )
+
         elif action == "TEXT_SEARCH":
             search_states[user_id] = {"mode": "text", "value": ""}
             await event.bot.edit_message(
@@ -358,7 +446,8 @@ async def handle_callback(event: MessageCallback):
                 text="🔍 *Поиск по названию документа*\n\n"
                     "Введите слово или фразу из названия.\n\n"
                     "📝 *Пример:*\n"
-                    "• `проверка видимости`\n\n"
+                    "• `проверка видимости`\n"
+                    "• `прибор`\n\n"
                     "✏️ Введите текст:",
                 attachments=[get_back_keyboard()]
             )
@@ -741,16 +830,91 @@ async def handle_callback(event: MessageCallback):
                     
             #         del search_states[user_id]
 
+# @dp.message_created()
+# async def handle_text_input(event: MessageCreated):
+#     # user_id = event.message.body.mid
+#     chat_id, user_id = event.get_ids() 
+#     text = event.message.body.text.strip()
+
+#     print(f'user_id: {user_id}, text: {text}')
+#     #print(f'user_docs_list: {user_docs_list}')
+    
+#     if user_id in user_docs_list and text.isdigit():
+#         doc_num = int(text)
+#         docs = user_docs_list.get(user_id, [])
+        
+#         if 1 <= doc_num <= len(docs):
+#             doc = docs[doc_num - 1]
+            
+#             if user_id not in user_history:
+#                 user_history[user_id] = []
+#             if doc['id'] not in user_history[user_id]:
+#                 user_history[user_id].append(doc['id'])
+#                 if len(user_history[user_id]) > 50:
+#                     user_history[user_id] = user_history[user_id][-50:]
+            
+#             is_favorite = user_id in user_favorites and doc['id'] in user_favorites[user_id]
+            
+#             card_text = (
+#                 f"📄 *{doc.get('file_name', doc.get('number', 'Документ'))}*\n\n"
+#                 f"🏷️ *Название:* {doc['name']}\n"
+#                 f"👥 *Исполнители:* {doc.get('executors', '—')}\n"
+#                 f"📋 *Оформление:* {doc.get('design', '—')}\n"
+#                 f"📅 *Введён:* {doc.get('order_number', '—')}"
+#             )
+            
+#             await event.message.answer(
+#                 text=card_text,
+#                 attachments=[get_document_card(doc, is_favorite)]
+#             )
+#         else:
+#             await event.message.answer(f"❌ Неверный номер. Введите число от 1 до {len(docs)}")
+#     else:
+#         results = doc_loader.search_by_number(text)
+#         if results:
+#             result_text = f"🔍 *Результаты поиска по номеру «{text}»:*\n\n"
+#             for doc in results[:10]:
+#                 result_text += f"📄 {doc.get('file_name', doc.get('number', '?'))}\n"
+#                 result_text += f"   {doc['name'][:80]}\n\n"
+#             await event.message.answer(result_text)
+#         else:
+#             docs_len = len(user_docs_list.get(user_id, []))
+#             print(f'docs_len: {docs_len}, user_is: {user_id}')
+#             await event.message.answer(
+#                 f"❌ Ничего не найдено.\n\n"
+#                 f"Введите номер документа из списка (1-{docs_len})\n"
+#                 f"или номер ТНК/КТП для поиска."
+#             )
+
 @dp.message_created()
 async def handle_text_input(event: MessageCreated):
-    # user_id = event.message.body.mid
-    chat_id, user_id = event.get_ids() 
+    chat_id, user_id = event.get_ids()
     text = event.message.body.text.strip()
 
-    print(f'user_id: {user_id}, text: {text}')
-    #print(f'user_docs_list: {user_docs_list}')
+    # Проверяем, ожидаем ли мы поиск (текстовый ввод)
+    state = search_states.get(user_id)
     
-    if user_id in user_docs_list and text.isdigit():
+    if state and isinstance(state, dict) and state.get("mode") == "text":
+        # Поиск по тексту
+        print(f"🔍 Поиск по тексту: {text}")
+        results = doc_loader.search_by_text(text)
+        print(f"Найдено результатов: {len(results)}")
+        
+        if results:
+            # Сохраняем результаты поиска
+            user_search_results[user_id] = results
+            user_search_page[user_id] = 0
+            user_search_mode[user_id] = "text"
+            user_search_query[user_id] = text
+            
+            await show_search_results(event, user_id, text, 0)
+        else:
+            await event.message.answer(f"❌ Ничего не найдено по запросу «{text}»")
+        
+        del search_states[user_id]
+    
+    elif user_id in user_docs_list and text.isdigit():
+        # Обработка ввода номера документа из списка (существующая логика)
         doc_num = int(text)
         docs = user_docs_list.get(user_id, [])
         
@@ -780,17 +944,19 @@ async def handle_text_input(event: MessageCreated):
             )
         else:
             await event.message.answer(f"❌ Неверный номер. Введите число от 1 до {len(docs)}")
+    
     else:
+        # Поиск по номеру (обычный)
         results = doc_loader.search_by_number(text)
         if results:
-            result_text = f"🔍 *Результаты поиска по номеру «{text}»:*\n\n"
-            for doc in results[:10]:
-                result_text += f"📄 {doc.get('file_name', doc.get('number', '?'))}\n"
-                result_text += f"   {doc['name'][:80]}\n\n"
-            await event.message.answer(result_text)
+            user_search_results[user_id] = results
+            user_search_page[user_id] = 0
+            user_search_mode[user_id] = "number"
+            user_search_query[user_id] = text
+            
+            await show_search_results(event, user_id, text, 0)
         else:
             docs_len = len(user_docs_list.get(user_id, []))
-            print(f'docs_len: {docs_len}, user_is: {user_id}')
             await event.message.answer(
                 f"❌ Ничего не найдено.\n\n"
                 f"Введите номер документа из списка (1-{docs_len})\n"

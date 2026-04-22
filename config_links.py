@@ -53,7 +53,8 @@ ADMIN_USER_IDS = [
 ]
 
 # Токен бота (лучше хранить в .env, но для примера оставлю здесь)
-BOT_TOKEN = "f9LHodD0cOLPGaxUVnHXUh9LJ3SqubxZrPWh-Tt2HwRrcRUbBJ-WaTeFYpkjBq0CJJL6n2BHOb4TkRIgXnR5"
+# BOT_TOKEN = "f9LHodD0cOLPGaxUVnHXUh9LJ3SqubxZrPWh-Tt2HwRrcRUbBJ-WaTeFYpkjBq0CJJL6n2BHOb4TkRIgXnR5"    # Первый бот
+BOT_TOKEN = "f9LHodD0cOLJMc6-7amUwp-y_WUTH-j58Ks5JcJlOycF4og9z7DbwhMoB_pBZeWrbqY_b_dSJDEQypHe8kSH"
 
 # ========== ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ==========
 

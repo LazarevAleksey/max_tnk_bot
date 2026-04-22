@@ -301,22 +301,66 @@ class DocumentLoader:
         
         return len(filtered)
     
+    # def get_document_by_id(self, doc_id: int) -> Optional[Dict]:
+    #     """Возвращает документ по ID"""
+    #     print('get_document_by_id')
+    #     for doc in self.documents:
+    #         if doc.get('id') == doc_id:
+    #             return doc
+    #     return None
+
     def get_document_by_id(self, doc_id: int) -> Optional[Dict]:
         """Возвращает документ по ID"""
-        print('get_document_by_id')
         for doc in self.documents:
             if doc.get('id') == doc_id:
                 return doc
         return None
     
-    def search_by_number(self, query: str) -> List[Dict]:
-        """Поиск по номеру документа"""
-        query_lower = query.lower().strip()
-        results = []
+    # def search_by_number(self, query: str) -> List[Dict]:
+    #     """Поиск по номеру документа"""
+    #     query_lower = query.lower().strip()
+    #     results = []
         
+    #     for doc in self.documents:
+    #         number = doc.get('number', '')
+    #         if query_lower in number.lower():
+    #             results.append(doc)
+        
+    #     return results[:20]
+
+    def search_by_number(self, query: str) -> List[Dict]:
+        """Поиск по номеру документа (в file_name)"""
+        query_clean = query.strip().lower()
+        
+        import re
+        # Извлекаем только цифры из запроса
+        query_digits = re.sub(r'\D', '', query_clean)
+        
+        results = []
         for doc in self.documents:
-            number = doc.get('number', '')
-            if query_lower in number.lower():
+            # Ищем в file_name (основное поле для номера)
+            file_name = doc.get('file_name', '').lower()
+            
+            # Проверяем различные варианты
+            match = False
+            
+            # 1. Прямое вхождение запроса в file_name
+            if query_clean in file_name:
+                match = True
+            
+            # 2. Поиск по цифрам (например "0147" найдёт "ТНК ЦШ 0147-2022")
+            if not match and query_digits:
+                file_digits = re.sub(r'\D', '', file_name)
+                if query_digits in file_digits:
+                    match = True
+            
+            # 3. Поиск в названии работы (на всякий случай)
+            if not match:
+                name = doc.get('name', '').lower()
+                if query_clean in name or (query_digits and query_digits in re.sub(r'\D', '', name)):
+                    match = True
+            
+            if match:
                 results.append(doc)
         
         return results[:20]
