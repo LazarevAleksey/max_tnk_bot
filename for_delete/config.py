@@ -3,21 +3,18 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-# ========== ТОКЕН ==========
+# Токен бота MAX
 BOT_TOKEN = os.getenv("MAX_BOT_TOKEN")
 
-# ========== ПУТИ ==========
+# Пути
 EXCEL_PATH = "data/documents.xlsx"
 PDF_FOLDER = "pdf/"
 
-# ========== НАСТРОЙКИ ==========
+# === Пагинация ===
 ITEMS_PER_PAGE = 10
 PREVIEW_MAX_LENGTH = 100
 
-# ========== АДМИНИСТРАТОРЫ ==========
-ADMIN_USER_IDS = ["232299786"]
-
-# ========== ССЫЛКИ ДЛЯ КНОПОК ==========
+# === Ссылки ===
 GUIDE_URLS = [
     "https://drive.google.com/drive/folders/1-q2cKPTeoPFATwFS1372B2x-ME3zlwOm",
     "https://disk.yandex.ru/d/wFEd1GHt9NiCOg"
@@ -28,30 +25,18 @@ REFERENCE_URLS = [
     "https://drive.google.com/drive/folders/1IfL-7X5ICDDSDQYhdPlXty6V0EmEKVpS"
 ]
 
-# Словарные версии (если нужны где-то по ключам)
-GUIDE_LINKS = {
-    "google_drive": GUIDE_URLS[0],
-    "yandex_disk": GUIDE_URLS[1]
-}
-
-REFERENCE_LINKS = {
-    "spravochnik": REFERENCE_URLS[0],
-    "instructions": REFERENCE_URLS[1]
-}
-
-# ========== ФАЙЛЫ ДЛЯ ОТПРАВКИ ==========
+# === Файлы для отправки ===
 FILES_CONFIG = {
-    "opis.pdf": {
-        "message_text": "opis_4_gorka",
-        "description": "Описание горки"
-    },
-    "tera.pdf": {
-        "message_text": "Инструкция TERA",
-        "description": "Инструкция по работе с TERA"
-    }
+    "opis.pdf": {"message_text": "opis_4_gorka", "description": "Описание горки"},
+    "tera.pdf": {"message_text": "Инструкция TERA", "description": "Инструкция по работе с TERA"}
 }
+
+# === Администраторы ===
+ADMIN_USER_IDS = ["232299786"]
+# "123456789",  # Дополнительные администраторы
 
 # ========== МЕНЮ: 10 КАТЕГОРИЙ ==========
+# Категории (главное меню)
 CATEGORIES = {
     "1️⃣ Светофоры и указатели": "CAT_SVET",
     "2️⃣ Переезды, тоннели, мосты": "CAT_PEREZD",
@@ -65,7 +50,7 @@ CATEGORIES = {
     "🔟 Конструкции, КОС, пожарная сигнализация": "CAT_KONSTR"
 }
 
-# ========== УСТРОЙСТВА В КАТЕГОРИЯХ ==========
+# Устройства внутри каждой категории (для подменю)
 CATEGORY_DEVICES = {
     "CAT_SVET": [
         "Светофоры",
@@ -73,8 +58,7 @@ CATEGORY_DEVICES = {
         "Маневровые колонки"
     ],
     "CAT_PEREZD": [
-        "Автоматическая переездная сигнализация (АПС), устройства заграждения,"
-        " сигнализация на пешеходных переходах",
+        "Автоматическая переездная сигнализация (АПС), устройства заграждения, сигнализация на пешеходных переходах",
         "Устройства тоннельной и мостовой сигнализации, оповещения о приближении поезда"
     ],
     "CAT_STREL": [
@@ -129,7 +113,7 @@ CATEGORY_DEVICES = {
     ]
 }
 
-# ========== ВИДЫ РАБОТ ==========
+# Виды работ
 ACTION_BUTTONS = {
     "✅ Проверка": "ACTION_PROV",
     "🔧 Регулировка": "ACTION_REG",
@@ -137,21 +121,3 @@ ACTION_BUTTONS = {
     "📏 Измерение": "ACTION_IZMER",
     "🧼 Очистка/Смазка": "ACTION_CHIST"
 }
-
-# ========== ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ==========
-def get_guide_buttons():
-    """Возвращает список ссылок для кнопки 'Руководство'"""
-    return GUIDE_URLS
-
-def get_reference_buttons():
-    """Возвращает список ссылок для кнопки 'Справочник/Инструкции'"""
-    return REFERENCE_URLS
-
-def get_file_info(filename: str):
-    """Возвращает информацию о файле по его имени"""
-    return FILES_CONFIG.get(filename)
-
-def get_all_files() -> list:
-    """Возвращает список всех доступ
-    ных файлов"""
-    return list(FILES_CONFIG.keys())

@@ -5,15 +5,15 @@ from maxapi.types import BotStarted, Command, MessageCreated, MessageCallback
 from maxapi.types.attachments.buttons import CallbackButton
 from maxapi.utils.inline_keyboard import InlineKeyboardBuilder
 
-from config import PDF_FOLDER, CATEGORIES, ITEMS_PER_PAGE
+from config import PDF_FOLDER, CATEGORIES, ITEMS_PER_PAGE, BOT_TOKEN
 from data_loader import doc_loader
 from keyboards import (
     get_main_menu, get_documents_menu, get_document_card,
     get_back_keyboard, get_search_number_keyboard, get_help_keyboard,
     get_devices_menu
 )
-from class_upload_file_max import MaxBot
-from config_links import BOT_TOKEN
+from for_delete.class_upload_file_max import MaxBot
+
 
 # Создайте экземпляр MaxBot (после импортов, до обработчиков)
 max_bot = MaxBot(BOT_TOKEN)
@@ -96,53 +96,6 @@ async def cmd_help(event: MessageCreated):
     )
     await event.message.answer(text=help_text, attachments=[get_help_keyboard()])
 
-
-# async def show_docs_page(event, user_id, device_name, page):
-#     from maxapi.types.attachments.buttons import CallbackButton
-#     from maxapi.utils.inline_keyboard import InlineKeyboardBuilder
-    
-#     docs = user_docs_list.get(user_id, [])
-#     total = len(docs)
-#     items_per_page = 10
-#     start = page * items_per_page
-#     end = min(start + items_per_page, total)
-#     page_docs = docs[start:end]
-    
-#     text = f"📄 *{device_name}*\n\n"
-#     text += f"📋 Всего документов: {total}\n"
-#     text += "➖" * 20 + "\n\n"
-    
-#     for i, doc in enumerate(page_docs, start=start + 1):
-#         doc_number = doc.get('file_name') or doc.get('number') or f"Док #{doc['id']}"
-#         text += f"*{i}.* 📄 *{doc_number}*\n"
-#         full_name = doc.get('name', 'Без названия')
-#         text += f"   {full_name}\n\n"
-    
-#     total_pages = (total + items_per_page - 1) // items_per_page
-#     text += "➖" * 20 + "\n"
-#     text += f"📄 Страница {page + 1} из {total_pages}\n\n"
-#     text += "✏️ *Введите номер документа* (например, `5`) для просмотра карточки.\n"
-#     text += "🔢 Или введите номер ТНК/КТП для поиска."
-    
-#     builder = InlineKeyboardBuilder()
-    
-#     nav_buttons = []
-#     if page > 0:
-#         nav_buttons.append(CallbackButton(text="◀ Назад", payload=f"docs_page:{device_name}:{page-1}"))
-#     if end < total:
-#         nav_buttons.append(CallbackButton(text="Вперед ▶", payload=f"docs_page:{device_name}:{page+1}"))
-    
-#     if nav_buttons:
-#         builder.row(*nav_buttons)
-    
-#     builder.row(CallbackButton(text="🔙 Назад к устройствам", payload="back_to_devices"))
-#     builder.row(CallbackButton(text="🏠 Главное меню", payload="menu:MAIN"))
-    
-#     await event.bot.edit_message(
-#         message_id=event.message.body.mid,
-#         text=text,
-#         attachments=[builder.as_markup()]
-#     )
 
 async def show_docs_page(event, user_id, device_name, page):
     from maxapi.types.attachments.buttons import CallbackButton
@@ -293,23 +246,6 @@ async def handle_callback(event: MessageCallback):
             user_search_page[user_id] = page
             await show_search_results(event, user_id, query, page)
 
-    # elif data.startswith("doc_preview:"):
-    #     doc_id = int(data.split(":")[1])
-    #     doc = doc_loader.get_document_by_id(doc_id)
-        
-    #     if doc:
-    #         # Показываем всплывающее уведомление с полным названием
-    #         # Максимальная длина answer — 200 символов, поэтому обрезаем если длиннее
-    #         full_name = doc.get('name', 'Без названия')
-    #         # if len(full_name) > 190:
-    #         #     full_name = full_name[:187] + "..."
-            
-    #         await event.answer(f"📄 {full_name}")
-    #         # await event.answer(f"📄 {doc.get('file_name', doc.get('number', 'Документ'))}\n\n{full_name}")
-    #     else:
-    #         await event.answer("❌ Документ не найден")
-        
-    #     return  # Не продолжаем дальше, чтобы не открывать карточку
 
     elif data.startswith("doc_preview:"):
         doc_id = int(data.split(":")[1])
@@ -347,48 +283,16 @@ async def handle_callback(event: MessageCallback):
                 
                 # Показываем первую часть
                 await event.answer(part1)            
-
-
-            # Первое сообщение: номер документа
-            #await event.answer(f"📄 {doc_number}")
-            # if len(full_name) > 190:
-                #full_name = full_name[:187] + "..."
             
             # Небольшая задержка, чтобы пользователь успел прочитать
                 import asyncio
                 await asyncio.sleep(2,0)
 
                 await event.answer(part2)
-            
-            # Второе сообщение: название
-            # if len(full_name) > 180:
-            #     # Если название очень длинное — разбиваем на части
-            #     parts = [full_name[i:i+180] for i in range(0, len(full_name), 180)]
-            #     for part in parts:
-            #         await event.answer(part)
-            #         await asyncio.sleep(0.3)
-            # else:
-            #     await event.answer(full_name)
         else:
             await event.answer("❌ Документ не найден")
         return
     
-
-    # ========== НОВЫЙ ОБРАБОТЧИК ДЛЯ ПРЕДПРОСМОТРА ==========
-    # if data.startswith("doc_preview:"):
-    #     doc_id = int(data.split(":")[1])
-    #     doc = doc_loader.get_document_by_id(doc_id)
-        
-    #     if doc:
-    #         full_name = doc.get('name', 'Без названия')
-    #         if len(full_name) > 180:
-    #             full_name = full_name[:177] + "..."
-            
-    #         preview_text = f"📄 {doc.get('file_name', doc.get('number', 'Документ'))}\n\n{full_name}\n\n👥 {doc.get('executors', '—')}"
-    #         await event.answer(preview_text)
-    #     else:
-    #         await event.answer("❌ Документ не найден")
-    #     return  # Важно: не продолжаем обработку
     
     # ========== ГЛАВНОЕ МЕНЮ ==========
     if data.startswith("menu:"):
@@ -401,18 +305,6 @@ async def handle_callback(event: MessageCallback):
                 attachments=[get_main_menu()]
             )
         
-        # elif action == "SEARCH":
-        #     search_states[user_id] = "waiting_number"
-        #     await event.bot.edit_message(
-        #         message_id=event.message.body.mid,
-        #         text="🔢 *Поиск по номеру документа*\n\n"
-        #              "Введите номер ТНК или КТП.\n\n"
-        #              "📝 *Примеры:*\n"
-        #              "• `0111`\n"
-        #              "• `ЦП 0111-2022`\n\n"
-        #              "Используйте клавиатуру:",
-        #         attachments=[get_search_number_keyboard()]
-        #     )
 
         elif action == "SEARCH":
             search_states[user_id] = {"mode": "number", "value": ""}
@@ -427,17 +319,6 @@ async def handle_callback(event: MessageCallback):
                 attachments=[get_search_number_keyboard()]
             )
 
-        # elif action == "TEXT_SEARCH":
-        #     search_states[user_id] = {"mode": "text", "value": ""}
-        #     await event.bot.edit_message(
-        #         message_id=event.message.body.mid,
-        #         text="🔍 *Поиск по названию документа*\n\n"
-        #             "Введите слово или фразу из названия.\n\n"
-        #             "📝 *Пример:*\n"
-        #             "• `проверка видимости`\n\n"
-        #             "✏️ Введите текст:",
-        #         attachments=[get_back_keyboard()]
-        #     )
 
         elif action == "TEXT_SEARCH":
             search_states[user_id] = {"mode": "text", "value": ""}
@@ -495,29 +376,6 @@ async def handle_callback(event: MessageCallback):
             text=f"📁 *{category_name}*\n\nВыберите устройство:",
             attachments=[get_devices_menu(category_code)]
         )
-    
-    # # ========== ВЫБОР УСТРОЙСТВА → СРАЗУ СПИСОК ТНК ==========
-    # elif data.startswith("device:"):
-    #     device_name = data.split(":", 1)[1]  # берём всё после "device:"
-    #     user_last_device[user_id] = device_name
-        
-    #     # Получаем все документы для этого устройства (без фильтра по действию)
-    #     docs = doc_loader.get_documents(device=device_name, limit=ITEMS_PER_PAGE, offset=0)
-    #     total = doc_loader.get_documents_count(device=device_name)
-    #     has_more = len(docs) == ITEMS_PER_PAGE
-        
-    #     if docs:
-    #         await event.bot.edit_message(
-    #             message_id=event.message.body.mid,
-    #             text=f"📄 *{device_name}*\n\nНайдено документов: {total}\n\nВыберите ТНК/КТП:",
-    #             attachments=[get_documents_menu(docs, device_name, 0, total, has_more)]
-    #         )
-    #     else:
-    #         await event.bot.edit_message(
-    #             message_id=event.message.body.mid,
-    #             text=f"📄 *{device_name}*\n\n❌ Документы не найдены",
-    #             attachments=[get_back_keyboard()]
-    #         )
 
 
     # ========== ВЫБОР УСТРОЙСТВА → ТЕКСТОВЫЙ СПИСОК ==========
@@ -610,16 +468,6 @@ async def handle_callback(event: MessageCallback):
             # Преобразуем имя файла из "ТНК ЦШ 0147-2022" в "0147.pdf"
             pdf_filename = convert_filename_to_pdf(doc['file_name'])
             file_path = os.path.join(PDF_FOLDER, pdf_filename)
-
-        
-            # # ДИАГНОСТИКА: выводим список файлов в папке
-            # print(f"📁 Содержимое папки {PDF_FOLDER}:")
-            # if os.path.exists(PDF_FOLDER):
-            #     for f in os.listdir(PDF_FOLDER):
-            #         print(f"   - {f}")
-            # else:
-            #     print(f"   ❌ Папка {PDF_FOLDER} не существует")
-
             
             print(f"Оригинальное имя: {doc['file_name']}")
             print(f"Ищем файл: {file_path}")
@@ -645,29 +493,6 @@ async def handle_callback(event: MessageCallback):
         else:
             await event.answer("❌ Документ не найден")
     
-    
-    # # ========== СКАЧИВАНИЕ ==========
-    # elif data.startswith("download:"):
-    #     doc_id = int(data.split(":")[1])
-    #     doc = doc_loader.get_document_by_id(doc_id)
-        
-    #     if doc and doc.get('file_name'):
-    #         file_path = os.path.join(PDF_FOLDER, doc['file_name'])
-            
-    #         if os.path.exists(file_path):
-    #             try:
-    #                 await event.bot.send_file(
-    #                     chat_id=chat_id,
-    #                     file_path=file_path,
-    #                     filename=doc['file_name'],
-    #                     caption=f"📎 {doc.get('file_name', doc.get('number', 'Документ'))}\n{doc.get('name', 'Без названия')}"
-    #                 )
-    #                 await event.answer("✅ Файл отправлен")
-    #             except Exception as e:
-    #                 logger.error(f"Ошибка отправки файла: {e}")
-    #                 await event.answer("❌ Ошибка при отправке файла")
-    #         else:
-    #             await event.answer(f"❌ Файл не найден: {doc['file_name']}")
     
     # ========== ИЗБРАННОЕ ==========
     elif data.startswith("favorite:"):
@@ -800,91 +625,6 @@ async def handle_callback(event: MessageCallback):
                     
                     del search_states[user_id]
 
-            # elif action == "submit":
-            #     search_number = search_states.get(user_id, "")
-                
-            #     if search_number:
-            #         results = doc_loader.search_by_number(search_number)
-                    
-            #         if results:
-            #             text = f"🔍 *Результаты поиска по номеру «{search_number}»:*\n\n"
-            #             for doc in results[:15]:
-            #                 text += f"📄 {doc.get('file_name', doc.get('number', '?'))}\n   {doc['name'][:50]}\n\n"
-                        
-            #             builder = InlineKeyboardBuilder()
-            #             for doc in results[:10]:
-            #                 builder.row(CallbackButton(text=doc.get('file_name', doc.get('number', f"Док #{doc['id']}"))[:30], payload=f"doc:{doc['id']}"))
-            #             builder.row(CallbackButton(text="🏠 Главное меню", payload="menu:MAIN"))
-                        
-            #             await event.bot.edit_message(
-            #                 message_id=event.message.body.mid,
-            #                 text=text,
-            #                 attachments=[builder.as_markup()]
-            #             )
-            #         else:
-            #             await event.bot.edit_message(
-            #                 message_id=event.message.body.mid,
-            #                 text=f"❌ *Ничего не найдено* по номеру «{search_number}»\n\nПопробуйте снова:",
-            #                 attachments=[get_main_menu()]
-            #             )
-                    
-            #         del search_states[user_id]
-
-# @dp.message_created()
-# async def handle_text_input(event: MessageCreated):
-#     # user_id = event.message.body.mid
-#     chat_id, user_id = event.get_ids() 
-#     text = event.message.body.text.strip()
-
-#     print(f'user_id: {user_id}, text: {text}')
-#     #print(f'user_docs_list: {user_docs_list}')
-    
-#     if user_id in user_docs_list and text.isdigit():
-#         doc_num = int(text)
-#         docs = user_docs_list.get(user_id, [])
-        
-#         if 1 <= doc_num <= len(docs):
-#             doc = docs[doc_num - 1]
-            
-#             if user_id not in user_history:
-#                 user_history[user_id] = []
-#             if doc['id'] not in user_history[user_id]:
-#                 user_history[user_id].append(doc['id'])
-#                 if len(user_history[user_id]) > 50:
-#                     user_history[user_id] = user_history[user_id][-50:]
-            
-#             is_favorite = user_id in user_favorites and doc['id'] in user_favorites[user_id]
-            
-#             card_text = (
-#                 f"📄 *{doc.get('file_name', doc.get('number', 'Документ'))}*\n\n"
-#                 f"🏷️ *Название:* {doc['name']}\n"
-#                 f"👥 *Исполнители:* {doc.get('executors', '—')}\n"
-#                 f"📋 *Оформление:* {doc.get('design', '—')}\n"
-#                 f"📅 *Введён:* {doc.get('order_number', '—')}"
-#             )
-            
-#             await event.message.answer(
-#                 text=card_text,
-#                 attachments=[get_document_card(doc, is_favorite)]
-#             )
-#         else:
-#             await event.message.answer(f"❌ Неверный номер. Введите число от 1 до {len(docs)}")
-#     else:
-#         results = doc_loader.search_by_number(text)
-#         if results:
-#             result_text = f"🔍 *Результаты поиска по номеру «{text}»:*\n\n"
-#             for doc in results[:10]:
-#                 result_text += f"📄 {doc.get('file_name', doc.get('number', '?'))}\n"
-#                 result_text += f"   {doc['name'][:80]}\n\n"
-#             await event.message.answer(result_text)
-#         else:
-#             docs_len = len(user_docs_list.get(user_id, []))
-#             print(f'docs_len: {docs_len}, user_is: {user_id}')
-#             await event.message.answer(
-#                 f"❌ Ничего не найдено.\n\n"
-#                 f"Введите номер документа из списка (1-{docs_len})\n"
-#                 f"или номер ТНК/КТП для поиска."
-#             )
 
 @dp.message_created()
 async def handle_text_input(event: MessageCreated):

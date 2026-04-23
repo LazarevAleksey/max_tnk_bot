@@ -5,34 +5,24 @@ import sys
 from maxapi import Bot
 
 from config import BOT_TOKEN
-from handlers import dp
+from handlers import dp  # ← импорт из папки handlers
 
 
-# Настройка логирования
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-    handlers=[
-        logging.StreamHandler(sys.stdout)
-    ]
+    handlers=[logging.StreamHandler(sys.stdout)]
 )
 
 logger = logging.getLogger(__name__)
 
 
 async def main():
-    """Запуск бота в MAX"""
     if not BOT_TOKEN:
-        logger.error("MAX_BOT_TOKEN не найден в переменных окружения!")
-        print("❌ Ошибка: MAX_BOT_TOKEN не найден!")
-        print("Создайте файл .env и добавьте: MAX_BOT_TOKEN=ваш_токен")
+        logger.error("MAX_BOT_TOKEN не найден!")
         return
-    logger.info("Запуск бота в MAX...")
-    # Создаём бота
+    logger.info("Запуск бота...")
     bot = Bot(token=BOT_TOKEN)
-    print("Токен передан в бота")
-    # Запускаем polling (удаляем webhook если был)
-    # await bot.delete_webhook()
     await dp.start_polling(bot)
 
 
@@ -40,6 +30,6 @@ if __name__ == "__main__":
     try:
         asyncio.run(main())
     except KeyboardInterrupt:
-        logger.info("Бот остановлен пользователем")
+        logger.info("Бот остановлен")
     except Exception as e:
-        logger.error(f"Критическая ошибка: {e}")
+        logger.error(f"Ошибка: {e}")

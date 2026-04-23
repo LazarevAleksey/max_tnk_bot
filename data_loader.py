@@ -3,6 +3,8 @@ import os
 import json
 from typing import List, Dict, Optional
 from config import EXCEL_PATH
+from utils.utils import clean_value  # ← добавить импорт
+
 
 class DocumentLoader:
     def __init__(self):
@@ -259,22 +261,22 @@ class DocumentLoader:
                       limit: int = 10, offset: int = 0) -> List[Dict]:
         """Возвращает список документов с фильтрацией и пагинацией"""
         print('get_documents')
-        def clean_value(value):
-            if not value:
-                return value
-            # Удаляем эмодзи (🚦, ✅ и т.д.) и лишние пробелы
-            import re
-            # Удаляем все emoji (простой способ)
-            emoji_pattern = re.compile("["
-                u"\U0001F600-\U0001F64F"  # смайлики
-                u"\U0001F300-\U0001F5FF"  # символы
-                u"\U0001F680-\U0001F6FF"  # транспорт
-                u"\U0001F1E0-\U0001F1FF"  # флаги
-                u"\U00002702-\U000027B0"
-                u"\U000024C2-\U0001F251"
-                "]+", flags=re.UNICODE)
-            cleaned = emoji_pattern.sub('', value).strip()
-            return cleaned
+        # def clean_value(value):
+        #     if not value:
+        #         return value
+        #     # Удаляем эмодзи (🚦, ✅ и т.д.) и лишние пробелы
+        #     import re
+        #     # Удаляем все emoji (простой способ)
+        #     emoji_pattern = re.compile("["
+        #         u"\U0001F600-\U0001F64F"  # смайлики
+        #         u"\U0001F300-\U0001F5FF"  # символы
+        #         u"\U0001F680-\U0001F6FF"  # транспорт
+        #         u"\U0001F1E0-\U0001F1FF"  # флаги
+        #         u"\U00002702-\U000027B0"
+        #         u"\U000024C2-\U0001F251"
+        #         "]+", flags=re.UNICODE)
+        #     cleaned = emoji_pattern.sub('', value).strip()
+        #     return cleaned
         print(f'device: {device}, action: {action}')
         filtered = self.documents
         # print(f'filtered: {filtered}')
@@ -300,14 +302,6 @@ class DocumentLoader:
             filtered = [d for d in filtered if d.get('action') == action]
         
         return len(filtered)
-    
-    # def get_document_by_id(self, doc_id: int) -> Optional[Dict]:
-    #     """Возвращает документ по ID"""
-    #     print('get_document_by_id')
-    #     for doc in self.documents:
-    #         if doc.get('id') == doc_id:
-    #             return doc
-    #     return None
 
     def get_document_by_id(self, doc_id: int) -> Optional[Dict]:
         """Возвращает документ по ID"""
@@ -316,17 +310,6 @@ class DocumentLoader:
                 return doc
         return None
     
-    # def search_by_number(self, query: str) -> List[Dict]:
-    #     """Поиск по номеру документа"""
-    #     query_lower = query.lower().strip()
-    #     results = []
-        
-    #     for doc in self.documents:
-    #         number = doc.get('number', '')
-    #         if query_lower in number.lower():
-    #             results.append(doc)
-        
-    #     return results[:20]
 
     def search_by_number(self, query: str) -> List[Dict]:
         """Поиск по номеру документа (в file_name)"""

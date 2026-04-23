@@ -1,7 +1,7 @@
 # class_upload_file_max.py
 import requests
 import time
-from config_links import FILES_CONFIG
+from config import BOT_TOKEN, ADMIN_USER_IDS, FILES_CONFIG
 
 
 TIME_UPLOAD_FILE_SERVER = 0.5
@@ -133,7 +133,6 @@ class MaxBot:
 
 def main():
     # Ваши данные (теперь можно брать из конфига)
-    from config_links import BOT_TOKEN, ADMIN_USER_IDS, FILES_CONFIG
     
     AUTH_TOKEN = BOT_TOKEN
     USER_ID = ADMIN_USER_IDS[0]  # Берем первого админа
