@@ -63,7 +63,10 @@ async def show_docs_page(event, user_id, device_name, page):
 
 
 async def show_search_results(event, user_id, query, page):
-    """Отображение результатов поиска"""    
+    """Отображение результатов поиска"""
+    from maxapi.types.attachments.buttons import CallbackButton
+    from maxapi.utils.inline_keyboard import InlineKeyboardBuilder
+    
     session = get_session(user_id)
     results = session.search_results
     total = len(results)
@@ -114,8 +117,9 @@ async def show_search_results(event, user_id, query, page):
     builder.row(CallbackButton(text="🔤 Поиск по названию", payload="menu:TEXT_SEARCH"))
     builder.row(CallbackButton(text="🏠 Главное меню", payload="menu:MAIN"))
     
-    await event.message.answer(
+    # Используем edit_message, чтобы не создавать новое сообщение
+    await event.bot.edit_message(
+        message_id=event.message.body.mid,
         text=text,
         attachments=[builder.as_markup()]
     )
-    
