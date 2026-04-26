@@ -5,12 +5,8 @@ from models.session import get_session
 from keyboards import get_back_keyboard
 
 
-
 async def show_docs_page(event, user_id, device_name, page):
     """Отображение страницы со списком документов"""
-    from maxapi.types.attachments.buttons import CallbackButton
-    from maxapi.utils.inline_keyboard import InlineKeyboardBuilder
-    
     session = get_session(user_id)
     docs = session.docs_list
     total = len(docs)
@@ -67,10 +63,7 @@ async def show_docs_page(event, user_id, device_name, page):
 
 
 async def show_search_results(event, user_id, query, page):
-    """Отображение результатов поиска"""
-    from maxapi.types.attachments.buttons import CallbackButton
-    from maxapi.utils.inline_keyboard import InlineKeyboardBuilder
-    
+    """Отображение результатов поиска"""    
     session = get_session(user_id)
     results = session.search_results
     total = len(results)
