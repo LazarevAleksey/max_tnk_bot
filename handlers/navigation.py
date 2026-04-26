@@ -5,7 +5,6 @@ from models.session import get_session
 from keyboards import get_back_keyboard
 
 
-
 async def show_docs_page(event, user_id, device_name, page):
     """Отображение страницы со списком документов"""
     from maxapi.types.attachments.buttons import CallbackButton
@@ -67,7 +66,7 @@ async def show_docs_page(event, user_id, device_name, page):
 
 
 async def show_search_results(event, user_id, query, page):
-    """Отображение результатов поиска"""
+    """Отображение результатов поиска (РЕДАКТИРУЕТ сообщение)"""
     from maxapi.types.attachments.buttons import CallbackButton
     from maxapi.utils.inline_keyboard import InlineKeyboardBuilder
     
@@ -121,8 +120,9 @@ async def show_search_results(event, user_id, query, page):
     builder.row(CallbackButton(text="🔤 Поиск по названию", payload="menu:TEXT_SEARCH"))
     builder.row(CallbackButton(text="🏠 Главное меню", payload="menu:MAIN"))
     
-    await event.message.answer(
+    # Используем edit_message, чтобы не создавать новое сообщение
+    await event.bot.edit_message(
+        message_id=event.message.body.mid,
         text=text,
         attachments=[builder.as_markup()]
     )
-    
