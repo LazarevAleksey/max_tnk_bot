@@ -10,6 +10,12 @@ class UserSearchState:
 
 
 @dataclass
+class UserTextSearchState:
+    """Состояние текстового поиска"""
+    value: str = ""
+
+
+@dataclass
 class UserSession:
     """Сессия пользователя"""
     favorites: List[int] = field(default_factory=list)
@@ -23,6 +29,7 @@ class UserSession:
     search_mode: Optional[str] = None
     search_query: str = ""
     search_message_id: Optional[str] = None
+    text_search_state: Optional[UserTextSearchState] = None
 
 
 # Глобальное хранилище
@@ -42,3 +49,10 @@ def get_search_state(user_id: int) -> UserSearchState:
     if session.search_state is None:
         session.search_state = UserSearchState()
     return session.search_state
+
+def get_text_search_state(user_id: int) -> UserTextSearchState:
+    """Получить состояние текстового поиска пользователя"""
+    session = get_session(user_id)
+    if session.text_search_state is None:
+        session.text_search_state = UserTextSearchState()
+    return session.text_search_state

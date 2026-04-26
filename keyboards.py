@@ -119,3 +119,58 @@ def get_search_number_keyboard():
 
 def get_help_keyboard():
     return _build_keyboard([[CallbackButton(text="🏠 Главное меню", payload="menu:MAIN")]])
+
+
+# keyboards.py
+
+def get_text_search_keyboard():
+    """Клавиатура для ввода текста поиска"""
+    buttons_rows = [
+        [CallbackButton(text="🔍 Искать", payload="text_search:submit"),
+         CallbackButton(text="🔙 Отмена", payload="menu:MAIN")]
+    ]
+    return _build_keyboard(buttons_rows)
+
+
+def get_text_input_keyboard():
+    """Клавиатура с буквами для ввода текста"""
+    buttons_rows = [
+        [CallbackButton(text="А", payload="text_input:А"),
+         CallbackButton(text="Б", payload="text_input:Б"),
+         CallbackButton(text="В", payload="text_input:В"),
+         CallbackButton(text="Г", payload="text_input:Г"),
+         CallbackButton(text="Д", payload="text_input:Д"),
+         CallbackButton(text="Е", payload="text_input:Е")],
+        [CallbackButton(text="Ж", payload="text_input:Ж"),
+         CallbackButton(text="З", payload="text_input:З"),
+         CallbackButton(text="И", payload="text_input:И"),
+         CallbackButton(text="Й", payload="text_input:Й"),
+         CallbackButton(text="К", payload="text_input:К"),
+         CallbackButton(text="Л", payload="text_input:Л")],
+        [CallbackButton(text="М", payload="text_input:М"),
+         CallbackButton(text="Н", payload="text_input:Н"),
+         CallbackButton(text="О", payload="text_input:О"),
+         CallbackButton(text="П", payload="text_input:П"),
+         CallbackButton(text="Р", payload="text_input:Р"),
+         CallbackButton(text="С", payload="text_input:С")],
+        [CallbackButton(text="Т", payload="text_input:Т"),
+         CallbackButton(text="У", payload="text_input:У"),
+         CallbackButton(text="Ф", payload="text_input:Ф"),
+         CallbackButton(text="Х", payload="text_input:Х"),
+         CallbackButton(text="Ц", payload="text_input:Ц"),
+         CallbackButton(text="Ч", payload="text_input:Ч")],
+        [CallbackButton(text="Ш", payload="text_input:Ш"),
+         CallbackButton(text="Щ", payload="text_input:Щ"),
+         CallbackButton(text="Ъ", payload="text_input:Ъ"),
+         CallbackButton(text="Ы", payload="text_input:Ы"),
+         CallbackButton(text="Ь", payload="text_input:Ь"),
+         CallbackButton(text="Э", payload="text_input:Э")],
+        [CallbackButton(text="Ю", payload="text_input:Ю"),
+         CallbackButton(text="Я", payload="text_input:Я"),
+         CallbackButton(text="⠀", payload="text_input: "),
+         CallbackButton(text="⌫", payload="text_input:backspace"),
+         CallbackButton(text="🗑️", payload="text_input:clear")],
+        [CallbackButton(text="🔍 Искать", payload="text_search:submit"),
+         CallbackButton(text="🔙 Отмена", payload="menu:MAIN")]
+    ]
+    return _build_keyboard(buttons_rows)

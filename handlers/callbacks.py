@@ -2,17 +2,17 @@
 import os
 import logging
 from maxapi.types import MessageCallback
-from maxapi.types.attachments.buttons import CallbackButton
-from maxapi.utils.inline_keyboard import InlineKeyboardBuilder
+# from maxapi.types.attachments.buttons import CallbackButton
+# from maxapi.utils.inline_keyboard import InlineKeyboardBuilder
 
 from config import PDF_FOLDER, CATEGORIES, ITEMS_PER_PAGE
 from data_loader import doc_loader
 from keyboards import (
     get_main_menu, get_documents_menu, get_document_card,
     get_back_keyboard, get_search_number_keyboard, get_help_keyboard,
-    get_devices_menu
+    get_devices_menu, get_text_input_keyboard
 )
-from models.session import get_session, get_search_state
+from models.session import get_session, get_search_state, get_text_search_state
 from services.file_sender import FileSender
 from utils.utils import convert_filename_to_pdf, split_long_text
 from .navigation import show_docs_page, show_search_results
@@ -69,8 +69,8 @@ async def handle_callback(event: MessageCallback):
         action = data.split(":")[1]
         
         if action == "MAIN" or action == "BACK_TO_MAIN":
-            await event.bot.edit_message(
-                message_id=event.message.body.mid,
+            await event.bot.edit_message( # type: ignore
+                message_id=event.message.body.mid, # type: ignore
                 text="🏠 *Главное меню*\n\nВыберите категорию:",
                 attachments=[get_main_menu()]
             )
@@ -79,31 +79,32 @@ async def handle_callback(event: MessageCallback):
             search_state = get_search_state(user_id)
             search_state.mode = "number"
             search_state.value = ""
-            await event.bot.edit_message(
-                message_id=event.message.body.mid,
+            await event.bot.edit_message( # type: ignore
+                message_id=event.message.body.mid, # type: ignore
                 text="🔢 *Поиск по номеру документа*\n\n"
                      "Введите номер ТНК или КТП.\n\n"
                      "📝 *Примеры:*\n"
                      "• `0147`\n"
                      "• `ТНК ЦШ 0147-2022`\n\n"
                      "Используйте клавиатуру:",
-                attachments=[get_search_number_keyboard()]
+                # attachments=[get_search_number_keyboard()]
+                attachments=[get_back_keyboard()] 
             )
         
         elif action == "TEXT_SEARCH":
-            search_state = get_search_state(user_id)
-            search_state.mode = "text"
-            search_state.value = ""
-            await event.bot.edit_message(
-                message_id=event.message.body.mid,
+            text_state = get_text_search_state(user_id)
+            text_state.value = ""
+            print('Натажа TEAXT_SEARCH')
+            await event.bot.edit_message( # type: ignore
+                message_id=event.message.body.mid, # type: ignore
                 text="🔍 *Поиск по названию документа*\n\n"
-                     "Введите слово или фразу из названия.\n\n"
-                     "📝 *Пример:*\n"
-                     "• `проверка видимости`\n"
-                     "• `прибор`\n\n"
-                     "✏️ Введите текст:",
-                attachments=[get_back_keyboard()]
+                    "Введите слово или фразу, используя клавиатуру:\n\n"
+                    f"📝 *Текст:* `{text_state.value}`\n\n"
+                    "Используйте кнопки ниже:",
+                # attachments=[get_text_input_keyboard()]
+                attachments=[get_back_keyboard()] 
             )
+
         
         elif action == "HISTORY":
             history = session.history
@@ -113,21 +114,21 @@ async def handle_callback(event: MessageCallback):
                     doc = doc_loader.get_document_by_id(doc_id)
                     if doc:
                         text += f"• {doc.get('file_name', doc.get('number', '?'))} - {doc['name'][:40]}\n"
-                await event.bot.edit_message(
-                    message_id=event.message.body.mid,
+                await event.bot.edit_message( # type: ignore
+                    message_id=event.message.body.mid, # type: ignore
                     text=text,
                     attachments=[get_back_keyboard()]
                 )
             else:
-                await event.bot.edit_message(
-                    message_id=event.message.body.mid,
+                await event.bot.edit_message( # type: ignore
+                    message_id=event.message.body.mid, # type: ignore
                     text="📅 *История просмотров*\n\nПока пуста.",
                     attachments=[get_back_keyboard()]
                 )
         
         elif action == "HELP":
-            await event.bot.edit_message(
-                message_id=event.message.body.mid,
+            await event.bot.edit_message( # type: ignore
+                message_id=event.message.body.mid, # type: ignore
                 text="ℹ️ *Помощь*\n\n"
                      "🔹 Выберите категорию → устройство\n"
                      "🔹 Нажмите на документ для просмотра\n"
@@ -143,8 +144,8 @@ async def handle_callback(event: MessageCallback):
         category_name = [k for k, v in CATEGORIES.items() if v == category_code]
         category_name = category_name[0] if category_name else category_code
         
-        await event.bot.edit_message(
-            message_id=event.message.body.mid,
+        await event.bot.edit_message( # type: ignore
+            message_id=event.message.body.mid, # type: ignore
             text=f"📁 *{category_name}*\n\nВыберите устройство:",
             attachments=[get_devices_menu(category_code)]
         )
@@ -162,8 +163,8 @@ async def handle_callback(event: MessageCallback):
             session.current_page = 0
             await show_docs_page(event, user_id, device_name, 0)
         else:
-            await event.bot.edit_message(
-                message_id=event.message.body.mid,
+            await event.bot.edit_message( # type: ignore
+                message_id=event.message.body.mid, # type: ignore
                 text=f"📄 *{device_name}*\n\n❌ Документы не найдены",
                 attachments=[get_back_keyboard()]
             )
@@ -180,8 +181,8 @@ async def handle_callback(event: MessageCallback):
             total = doc_loader.get_documents_count(device=device_name)
             has_more = len(docs) == ITEMS_PER_PAGE
             
-            await event.bot.edit_message(
-                message_id=event.message.body.mid,
+            await event.bot.edit_message( # type: ignore
+                message_id=event.message.body.mid, # type: ignore
                 text=f"📄 *{device_name}*\n\nНайдено документов: {total}\n\nВыберите ТНК/КТП:",
                 attachments=[get_documents_menu(docs, device_name, page, total, has_more)]
             )
@@ -189,8 +190,8 @@ async def handle_callback(event: MessageCallback):
     
     # ========== ВОЗВРАТ К УСТРОЙСТВАМ ==========
     if data.startswith("back_to_devices"):
-        await event.bot.edit_message(
-            message_id=event.message.body.mid,
+        await event.bot.edit_message( # type: ignore
+            message_id=event.message.body.mid, # type: ignore
             text="🏠 *Главное меню*\n\nВыберите категорию:",
             attachments=[get_main_menu()]
         )
@@ -218,8 +219,8 @@ async def handle_callback(event: MessageCallback):
                 f"⬇️ Нажмите «Скачать файл» для получения документа."
             )
             
-            await event.bot.edit_message(
-                message_id=event.message.body.mid,
+            await event.bot.edit_message( # type: ignore
+                message_id=event.message.body.mid, # type: ignore
                 text=text,
                 attachments=[get_document_card(doc, is_favorite)]
             )
@@ -227,15 +228,25 @@ async def handle_callback(event: MessageCallback):
     
     # ========== СКАЧИВАНИЕ ==========
     if data.startswith("download:"):
+        await event.answer("🔍 Ищу файл...") # type: ignore
         doc_id = int(data.split(":")[1])
         doc = doc_loader.get_document_by_id(doc_id)
         
         if doc and doc.get('file_name'):
+            # Показываем, что файл найден, начинаем подготовку
+            await event.answer("📦 Подготавливаю файл...")
+            # Добавляем в историю при скачивании
+            if doc_id not in session.history:
+                session.history.append(doc_id)
+                if len(session.history) > 50:
+                    session.history = session.history[-50:]
             pdf_filename = convert_filename_to_pdf(doc['file_name'])
             file_path = os.path.join(PDF_FOLDER, pdf_filename)
             
             if os.path.exists(file_path):
                 try:
+                    # Показываем, что началась загрузка
+                    await event.answer("📤 Загружаю файл...")
                     success = await file_sender.send_file_to_user(
                         user_id=user_id,
                         file_path=file_path,
@@ -246,6 +257,12 @@ async def handle_callback(event: MessageCallback):
                         await event.answer("✅ Файл отправлен")
                     else:
                         await event.answer("❌ Ошибка при отправке файла")
+                except TimeoutError:
+                    logger.error(f"Таймаут при отправке файла: {doc.get('file_name')}")
+                    await event.answer("⏱️ Превышено время ожидания")
+                except ConnectionError:
+                    logger.error(f"Ошибка соединения при отправке файла: {doc.get('file_name')}")
+                    await event.answer("📡 Ошибка соединения")
                 except Exception as e:
                     logger.error(f"Ошибка отправки файла: {e}")
                     await event.answer("❌ Ошибка при отправке файла")
@@ -274,9 +291,21 @@ async def handle_callback(event: MessageCallback):
             doc = doc_loader.get_document_by_id(doc_id)
             if doc:
                 is_favorite = doc_id in session.favorites
-                await event.bot.edit_message_reply_markup(
-                    chat_id=chat_id,
-                    message_id=event.message.body.mid,
+                
+                # Формируем текст сообщения (такой же, как при открытии документа)
+                text = (
+                    f"📄 *{doc.get('file_name', doc.get('number', 'Документ'))}*\n\n"
+                    f"🏷️ *Название:* {doc['name']}\n"
+                    f"👥 *Исполнители:* {doc.get('executors', '—')}\n"
+                    f"📋 *Оформление:* {doc.get('design', '—')}\n"
+                    f"📅 *Введён:* {doc.get('order_number', '—')}\n\n"
+                    f"⬇️ Нажмите «Скачать файл» для получения документа."
+                )
+                
+                # Обновляем сообщение (текст + клавиатура)
+                await event.bot.edit_message( # type: ignore
+                    message_id=event.message.body.mid, # type: ignore
+                    text=text,
                     attachments=[get_document_card(doc, is_favorite)]
                 )
         return
@@ -289,14 +318,14 @@ async def handle_callback(event: MessageCallback):
             total = doc_loader.get_documents_count(device=device_name)
             has_more = len(docs) == ITEMS_PER_PAGE
             
-            await event.bot.edit_message(
-                message_id=event.message.body.mid,
+            await event.bot.edit_message( # type: ignore
+                message_id=event.message.body.mid, # type: ignore
                 text=f"📄 *{device_name}*\n\nНайдено документов: {total}\n\nВыберите ТНК/КТП:",
                 attachments=[get_documents_menu(docs, device_name, 0, total, has_more)]
             )
         else:
-            await event.bot.edit_message(
-                message_id=event.message.body.mid,
+            await event.bot.edit_message( # type: ignore
+                message_id=event.message.body.mid, # type: ignore
                 text="🏠 *Главное меню*\n\nВыберите категорию:",
                 attachments=[get_main_menu()]
             )
@@ -315,24 +344,24 @@ async def handle_callback(event: MessageCallback):
                 digit = parts[2]
                 search_state.value = current_value + digit
                 
-                await event.bot.edit_message(
-                    message_id=event.message.body.mid,
+                await event.bot.edit_message( # type: ignore
+                    message_id=event.message.body.mid, # type: ignore
                     text=f"🔢 *Поиск по номеру*\n\nВведите номер: `{search_state.value}`\n\nИспользуйте клавиатуру:",
                     attachments=[get_search_number_keyboard()]
                 )
             
             elif action == "backspace":
                 search_state.value = current_value[:-1]
-                await event.bot.edit_message(
-                    message_id=event.message.body.mid,
+                await event.bot.edit_message( # type: ignore
+                    message_id=event.message.body.mid, # type: ignore
                     text=f"🔢 *Поиск по номеру*\n\nВведите номер: `{search_state.value}`\n\nИспользуйте клавиатуру:",
                     attachments=[get_search_number_keyboard()]
                 )
             
             elif action == "clear":
                 search_state.value = ""
-                await event.bot.edit_message(
-                    message_id=event.message.body.mid,
+                await event.bot.edit_message( # type: ignore
+                    message_id=event.message.body.mid, # type: ignore
                     text="🔢 *Поиск по номеру документа*\n\n"
                          "Введите номер ТНК или КТП.\n\n"
                          "📝 *Примеры:*\n"
@@ -356,11 +385,67 @@ async def handle_callback(event: MessageCallback):
                         
                         await show_search_results(event, user_id, search_number, 0)
                     else:
-                        await event.bot.edit_message(
-                            message_id=event.message.body.mid,
+                        await event.bot.edit_message( # type: ignore
+                            message_id=event.message.body.mid, # type: ignore
                             text=f"❌ *Ничего не найдено* по номеру «{search_number}»\n\nПопробуйте снова:",
                             attachments=[get_search_number_keyboard()]
                         )
                     
                     search_state.value = ""
+        return
+    
+    # ========== ТЕКСТОВЫЙ ВВОД (БУКВЫ) ==========
+    if data.startswith("text_input:"):
+        action = data.split(":")[1]
+        text_state = get_text_search_state(user_id)
+        current_value = text_state.value
+        
+        if action == "backspace":
+            text_state.value = current_value[:-1]
+        elif action == "clear":
+            text_state.value = ""
+        else:
+            # Добавляем букву или пробел
+            text_state.value = current_value + action
+        
+        await event.bot.edit_message( # type: ignore
+            message_id=event.message.body.mid, # type: ignore
+            text="🔍 *Поиск по названию документа*\n\n"
+                "Введите слово или фразу, используя клавиатуру:\n\n"
+                f"📝 *Текст:* `{text_state.value}`\n\n"
+                "Используйте кнопки ниже:",
+            attachments=[get_text_input_keyboard()]
+        )
+        return
+    
+    # ========== ТЕКСТОВЫЙ ПОИСК (ОТПРАВКА) ==========
+    if data.startswith("text_search:"):
+        action = data.split(":")[1]
+        
+        if action == "submit":
+            text_state = get_text_search_state(user_id)
+            query = text_state.value
+            
+            if query:
+                results = doc_loader.search_by_text(query)
+                
+                if results:
+                    session.search_results = results
+                    session.search_page = 0
+                    session.search_mode = "text"
+                    session.search_query = query
+                    
+                    await show_search_results(event, user_id, query, 0)
+                else:
+                    await event.bot.edit_message( # type: ignore
+                        message_id=event.message.body.mid, # type: ignore
+                        text=f"❌ *Ничего не найдено* по запросу «{query}»\n\n"
+                            "Попробуйте снова:",
+                        attachments=[get_text_input_keyboard()]
+                    )
+                
+                # Очищаем состояние
+                text_state.value = ""
+            else:
+                await event.answer("❌ Введите текст для поиска")
         return
