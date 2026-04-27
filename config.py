@@ -28,6 +28,9 @@ REFERENCE_URLS = [
     "https://drive.google.com/drive/folders/1IfL-7X5ICDDSDQYhdPlXty6V0EmEKVpS"
 ]
 
+# Добавьте ссылку для обратной связи
+FEEDBACK_URL = "mailto:bins87@mail.ru"  # или mailto:example@domain.ru
+
 # Словарные версии (если нужны где-то по ключам)
 GUIDE_LINKS = {
     "google_drive": GUIDE_URLS[0],

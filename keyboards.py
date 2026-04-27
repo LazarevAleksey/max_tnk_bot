@@ -1,5 +1,5 @@
 from maxapi.utils.inline_keyboard import InlineKeyboardBuilder
-from maxapi.types.attachments.buttons import CallbackButton
+from maxapi.types.attachments.buttons import CallbackButton, LinkButton
 from config import CATEGORIES, CATEGORY_DEVICES, ITEMS_PER_PAGE
 
 
@@ -28,6 +28,8 @@ def get_main_menu():
         CallbackButton(text="❓ Помощь", payload="menu:HELP")
     ])
     
+    # ← ДОБАВИТЬ кнопку возврата
+    buttons_rows.append([CallbackButton(text="🏠 Стартовое меню", payload="start:BACK")])
     return _build_keyboard(buttons_rows)
 
 
@@ -174,3 +176,37 @@ def get_text_input_keyboard():
          CallbackButton(text="🔙 Отмена", payload="menu:MAIN")]
     ]
     return _build_keyboard(buttons_rows)
+
+
+def get_start_menu():
+    """Стартовое меню бота"""
+    from config import GUIDE_URLS, REFERENCE_URLS, FEEDBACK_URL
+    
+    buttons_rows = [
+        [CallbackButton(text="📄 Поиск ТНК/КТП", payload="start:TNK")],
+    ]
+    
+    # Раздел документации
+    if REFERENCE_URLS:
+        buttons_rows.append([LinkButton(text="📖 Справочник", url=REFERENCE_URLS[0])])
+    if GUIDE_URLS:
+        buttons_rows.append([LinkButton(text="📘 Руководство по эксплуатации", url=GUIDE_URLS[0])])
+    if len(REFERENCE_URLS) > 1:
+        buttons_rows.append([LinkButton(text="📗 Инструкции", url=REFERENCE_URLS[1])])
+    
+    # Дополнительные кнопки
+    buttons_rows.append([
+        CallbackButton(text="📅 История", payload="menu:HISTORY"),
+        CallbackButton(text="❓ Помощь", payload="menu:HELP")
+    ])
+    
+    # Обратная связь
+    if FEEDBACK_URL:
+        buttons_rows.append([LinkButton(text="📧 Обратная связь", url=FEEDBACK_URL)])
+    
+    return _build_keyboard(buttons_rows)
+
+
+def get_start_menu_back():
+    """Кнопка возврата в стартовое меню"""
+    return _build_keyboard([[CallbackButton(text="🏠 Стартовое меню", payload="start:MAIN")]])

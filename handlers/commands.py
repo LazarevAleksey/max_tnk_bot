@@ -3,14 +3,14 @@ from maxapi.types import BotStarted, Command, MessageCreated
 from keyboards import get_main_menu, get_help_keyboard
 
 
-async def bot_started(event: BotStarted):
-    await event.bot.send_message(
-        chat_id=event.chat_id,
-        text="🔧 *Система поиска ТНК/КТП*\n\n"
-             "📋 Инструкция ОАО «РЖД» №3168р\n"
-             "👇 Выберите категорию:",
-        attachments=[get_main_menu()]
-    )
+# async def bot_started(event: BotStarted):
+#     await event.bot.send_message(
+#         chat_id=event.chat_id,
+#         text="🔧 *Система поиска ТНК/КТП*\n\n"
+#              "📋 Инструкция ОАО «РЖД» №3168р\n"
+#              "👇 Выберите категорию:",
+#         attachments=[get_main_menu()]
+#     )
 
 
 async def cmd_start(event: MessageCreated):

@@ -10,7 +10,7 @@ from data_loader import doc_loader
 from keyboards import (
     get_main_menu, get_documents_menu, get_document_card,
     get_back_keyboard, get_search_number_keyboard, get_help_keyboard,
-    get_devices_menu, get_text_input_keyboard
+    get_devices_menu, get_text_input_keyboard, get_start_menu
 )
 from models.session import get_session, get_search_state, get_text_search_state
 from services.file_sender import FileSender
@@ -27,6 +27,29 @@ async def handle_callback(event: MessageCallback):
     data = event.callback.payload
     
     if not data:
+        return
+    
+    # ========== СТАРТОВОЕ МЕНЮ ==========
+    if data.startswith("start:"):
+        action = data.split(":")[1]
+        
+        if action == "TNK":
+            # Переход в существующее меню поиска ТНК
+            await event.bot.edit_message(
+                message_id=event.message.body.mid,
+                text="📄 *Поиск ТНК/КТП*\n\n"
+                     "Инструкция ОАО «РЖД» №3168р\n\n"
+                     "Выберите категорию оборудования:",
+                attachments=[get_main_menu()]
+            )
+        
+        elif action == "MAIN" or action == "BACK":
+            # Возврат в стартовое меню
+            await event.bot.edit_message(
+                message_id=event.message.body.mid,
+                text="👋 *Главное меню*\n\nВыберите раздел:",
+                attachments=[get_start_menu()]
+            )
         return
     
     # ========== ПАГИНАЦИЯ ДОКУМЕНТОВ ==========

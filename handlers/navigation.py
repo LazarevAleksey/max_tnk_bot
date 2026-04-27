@@ -3,9 +3,30 @@ import logging
 from maxapi.types.attachments.buttons import CallbackButton
 from maxapi.utils.inline_keyboard import InlineKeyboardBuilder
 from models.session import get_session
+from keyboards import get_start_menu  # ← добавить импорт
+from maxapi.types import BotStarted, Command, MessageCreated
 # from keyboards import get_back_keyboard
 
 logger = logging.getLogger(__name__)
+
+
+async def bot_started(event: BotStarted):
+    await event.bot.send_message(
+        chat_id=event.chat_id,
+        text="👋 *Добро пожаловать в СЦБ-ДОК!*\n\n"
+             "Бот для поиска технической документации:\n\n"
+             "📄 *ТНК/КТП* — инструкции ОАО «РЖД» №3168р\n"
+             "📚 *Документация* — справочники, руководства, инструкции\n\n"
+             "Выберите нужный раздел:",
+        attachments=[get_start_menu()]
+    )
+
+
+async def cmd_start(event: MessageCreated):
+    await event.message.answer(
+        text="👋 *Добро пожаловать!*\n\nВыберите раздел:",
+        attachments=[get_start_menu()]
+    )
 
 
 async def show_docs_page(event, user_id, device_name, page):
