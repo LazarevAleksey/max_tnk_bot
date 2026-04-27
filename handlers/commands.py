@@ -13,11 +13,11 @@ from keyboards import get_main_menu, get_help_keyboard
 #     )
 
 
-async def cmd_start(event: MessageCreated):
-    await event.message.answer(
-        text="🔧 *Система поиска ТНК/КТП*\n\n👇 Выберите категорию:",
-        attachments=[get_main_menu()]
-    )
+# async def cmd_start(event: MessageCreated):
+#     await event.message.answer(
+#         text="🔧 *Система поиска ТНК/КТП*\n\n👇 Выберите категорию:",
+#         attachments=[get_main_menu()]
+#     )
 
 
 async def cmd_help(event: MessageCreated):

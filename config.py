@@ -29,7 +29,8 @@ REFERENCE_URLS = [
 ]
 
 # Добавьте ссылку для обратной связи
-FEEDBACK_URL = "mailto:bins87@mail.ru"  # или mailto:example@domain.ru
+# FEEDBACK_URL = "mailto:bins87@mail.ru"  # или mailto:example@domain.ru
+FEEDBACK_URL = "https://forms.yandex.ru/u/69ef9f95eb61461a1874ccb2/"  # или ссылку на Google Forms
 
 # Словарные версии (если нужны где-то по ключам)
 GUIDE_LINKS = {

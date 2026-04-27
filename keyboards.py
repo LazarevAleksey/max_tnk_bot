@@ -195,10 +195,10 @@ def get_start_menu():
         buttons_rows.append([LinkButton(text="📗 Инструкции", url=REFERENCE_URLS[1])])
     
     # Дополнительные кнопки
-    buttons_rows.append([
-        CallbackButton(text="📅 История", payload="menu:HISTORY"),
-        CallbackButton(text="❓ Помощь", payload="menu:HELP")
-    ])
+    # buttons_rows.append([
+    #     CallbackButton(text="📅 История", payload="menu:HISTORY"),
+    #     CallbackButton(text="❓ Помощь", payload="menu:HELP")
+    # ])
     
     # Обратная связь
     if FEEDBACK_URL:

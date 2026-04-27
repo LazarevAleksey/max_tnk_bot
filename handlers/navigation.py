@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 
 
 async def bot_started(event: BotStarted):
-    await event.bot.send_message(
+    await event.bot.send_message(  # type: ignore
         chat_id=event.chat_id,
         text="👋 *Добро пожаловать в СЦБ-ДОК!*\n\n"
              "Бот для поиска технической документации:\n\n"
