@@ -2,8 +2,6 @@
 import os
 import logging
 from maxapi.types import MessageCallback
-# from maxapi.types.attachments.buttons import CallbackButton
-# from maxapi.utils.inline_keyboard import InlineKeyboardBuilder
 
 from config import PDF_FOLDER, CATEGORIES, ITEMS_PER_PAGE
 from data_loader import doc_loader
@@ -16,8 +14,10 @@ from models.session import get_session, get_search_state, get_text_search_state
 from services.file_sender import FileSender
 from utils.utils import convert_filename_to_pdf, split_long_text
 from .navigation import show_docs_page, show_search_results
+from logger import get_logger, log_error  # ← добавить
 
-logger = logging.getLogger(__name__)
+# Создаём логгер для этого модуля
+logger = get_logger("callbacks")
 file_sender = FileSender()
 
 
@@ -28,6 +28,8 @@ async def handle_callback(event: MessageCallback):
     
     if not data:
         return
+    
+    logger.debug(f"Callback от user {user_id}: {data}")
     
     # ========== СТАРТОВОЕ МЕНЮ ==========
     if data.startswith("start:"):

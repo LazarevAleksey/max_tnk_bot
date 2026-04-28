@@ -7,8 +7,9 @@ load_dotenv()
 BOT_TOKEN = os.getenv("MAX_BOT_TOKEN")
 
 # ========== ПУТИ ==========
-EXCEL_PATH = "data/documents.xlsx"
-PDF_FOLDER = "/root/Data/Scb_tnk"
+
+EXCEL_PATH = os.getenv("EXCEL_PATH")
+PDF_FOLDER = os.getenv("PDF_FOLDER")
 
 # ========== НАСТРОЙКИ ==========
 ITEMS_PER_PAGE = 10

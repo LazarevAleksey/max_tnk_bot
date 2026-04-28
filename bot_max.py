@@ -6,6 +6,8 @@ from maxapi import Bot
 
 from config import BOT_TOKEN
 from handlers import dp  # ← импорт из папки handlers
+from logger import setup_logger  # ← импортируем
+
 
 
 logging.basicConfig(
@@ -14,7 +16,10 @@ logging.basicConfig(
     handlers=[logging.StreamHandler(sys.stdout)]
 )
 
-logger = logging.getLogger(__name__)
+# logger = logging.getLogger(__name__)
+# Настройка глобального логгера
+logger = setup_logger("bot", log_to_file=True, log_to_console=True)
+
 
 
 async def main():
