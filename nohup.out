@@ -1,0 +1,82 @@
+load_data
+✅ Загружено 523 документов из data/documents.xlsx
+2026-04-27 18:20:49,221 - __main__ - INFO - Запуск бота...
+2026-04-27 18:20:49,312 - dispatcher - INFO - Бот: @id7842215031_1_bot first_name=СЦБ_ДОК2 id=271347450
+2026-04-27 18:20:49,312 - dispatcher - INFO - Зарегистрировано 5 обработчиков событий
+2026-04-27 18:20:57,082 - dispatcher - INFO - Обработано: router_id: 0 | UpdateType.MESSAGE_CALLBACK | chat_id: 327379363, user_id: 61802329
+2026-04-27 18:20:58,434 - dispatcher - INFO - Обработано: router_id: 0 | UpdateType.MESSAGE_CALLBACK | chat_id: 327379363, user_id: 61802329
+✅ URL получен
+📁 Загружаю файл: /root/Data/Scb_tnk/0148.pdf
+✅ Файл загружен, токен получен
+2026-04-27 19:50:50,171 - dispatcher - INFO - Обработано: router_id: 0 | UpdateType.MESSAGE_CALLBACK | chat_id: 502592496, user_id: 232299786
+✅ URL получен
+📁 Загружаю файл: /root/Data/Scb_tnk/0147.pdf
+✅ Файл загружен, токен получен
+2026-04-27 19:50:51,589 - dispatcher - INFO - Обработано: router_id: 0 | UpdateType.MESSAGE_CALLBACK | chat_id: 502592496, user_id: 232299786
+2026-04-27 19:50:56,010 - dispatcher - INFO - Обработано: router_id: 0 | UpdateType.MESSAGE_CALLBACK | chat_id: 502592496, user_id: 232299786
+2026-04-27 19:50:59,974 - dispatcher - INFO - Обработано: router_id: 0 | UpdateType.MESSAGE_CALLBACK | chat_id: 502592496, user_id: 232299786
+2026-04-27 19:51:02,683 - dispatcher - INFO - Обработано: router_id: 0 | UpdateType.MESSAGE_CALLBACK | chat_id: 502592496, user_id: 232299786
+2026-04-27 19:51:17,339 - dispatcher - INFO - Обработано: router_id: 0 | UpdateType.MESSAGE_CALLBACK | chat_id: 502592496, user_id: 232299786
+get_documents
+device: Светофоры, action: None
+2026-04-27 19:51:22,644 - dispatcher - INFO - Обработано: router_id: 0 | UpdateType.MESSAGE_CALLBACK | chat_id: 502592496, user_id: 232299786
+2026-04-27 19:51:49,981 - dispatcher - INFO - Обработано: router_id: 0 | UpdateType.MESSAGE_CALLBACK | chat_id: 502592496, user_id: 232299786
+2026-04-27 19:51:53,806 - dispatcher - INFO - Обработано: router_id: 0 | UpdateType.MESSAGE_CALLBACK | chat_id: 502592496, user_id: 232299786
+2026-04-27 19:51:56,434 - dispatcher - INFO - Обработано: router_id: 0 | UpdateType.MESSAGE_CALLBACK | chat_id: 502592496, user_id: 232299786
+2026-04-27 19:52:02,625 - dispatcher - INFO - Обработано: router_id: 0 | UpdateType.MESSAGE_CALLBACK | chat_id: 502592496, user_id: 232299786
+2026-04-27 19:52:16,019 - dispatcher - INFO - Обработано: router_id: 0 | UpdateType.MESSAGE_CALLBACK | chat_id: 502592496, user_id: 232299786
+2026-04-27 19:52:17,303 - dispatcher - INFO - Обработано: router_id: 0 | UpdateType.MESSAGE_CALLBACK | chat_id: 502592496, user_id: 232299786
+2026-04-27 19:52:18,000 - dispatcher - INFO - Обработано: router_id: 0 | UpdateType.MESSAGE_CALLBACK | chat_id: 502592496, user_id: 232299786
+2026-04-27 19:52:18,780 - dispatcher - INFO - Обработано: router_id: 0 | UpdateType.MESSAGE_CALLBACK | chat_id: 502592496, user_id: 232299786
+2026-04-27 19:52:20,090 - dispatcher - INFO - Обработано: router_id: 0 | UpdateType.MESSAGE_CALLBACK | chat_id: 502592496, user_id: 232299786
+2026-04-27 19:52:21,100 - dispatcher - INFO - Обработано: router_id: 0 | UpdateType.MESSAGE_CALLBACK | chat_id: 502592496, user_id: 232299786
+2026-04-27 19:52:23,245 - dispatcher - INFO - Обработано: router_id: 0 | UpdateType.MESSAGE_CALLBACK | chat_id: 502592496, user_id: 232299786
+2026-04-27 19:52:38,710 - dispatcher - ERROR - Общая ошибка при обработке событий: <class 'maxapi.exceptions.max.MaxApiError'> - Ошибка от API: self.code=404 self.raw={'code': 'chat.not.found', 'message': 'Chat 502592496 not found'}
+2026-04-27 19:52:39,061 - dispatcher - INFO - Проигнорировано: router_id: 0 | UpdateType.DIALOG_REMOVED | chat_id: 502592496, user_id: 232299786
+2026-04-27 19:52:42,726 - dispatcher - INFO - Обработано: router_id: 0 | UpdateType.BOT_STARTED | chat_id: 502592496, user_id: 232299786
+2026-04-27 19:52:52,605 - dispatcher - INFO - Обработано: router_id: 0 | UpdateType.MESSAGE_CALLBACK | chat_id: 502592496, user_id: 232299786
+2026-04-27 19:52:54,855 - dispatcher - INFO - Обработано: router_id: 0 | UpdateType.MESSAGE_CALLBACK | chat_id: 502592496, user_id: 232299786
+get_documents
+device: Светофоры, action: None
+2026-04-27 19:52:56,681 - dispatcher - INFO - Обработано: router_id: 0 | UpdateType.MESSAGE_CALLBACK | chat_id: 502592496, user_id: 232299786
+✅ URL получен
+📁 Загружаю файл: /root/Data/Scb_tnk/0148.pdf
+✅ Файл загружен, токен получен
+2026-04-27 19:52:59,250 - dispatcher - INFO - Обработано: router_id: 0 | UpdateType.MESSAGE_CALLBACK | chat_id: 502592496, user_id: 232299786
+✅ URL получен
+📁 Загружаю файл: /root/Data/Scb_tnk/0777.pdf
+✅ Файл загружен, токен получен
+2026-04-27 19:53:01,652 - dispatcher - INFO - Обработано: router_id: 0 | UpdateType.MESSAGE_CALLBACK | chat_id: 502592496, user_id: 232299786
+2026-04-27 19:53:03,124 - dispatcher - INFO - Обработано: router_id: 0 | UpdateType.MESSAGE_CALLBACK | chat_id: 502592496, user_id: 232299786
+2026-04-27 19:53:04,981 - dispatcher - INFO - Обработано: router_id: 0 | UpdateType.MESSAGE_CALLBACK | chat_id: 502592496, user_id: 232299786
+2026-04-27 19:53:05,768 - dispatcher - INFO - Обработано: router_id: 0 | UpdateType.MESSAGE_CALLBACK | chat_id: 502592496, user_id: 232299786
+2026-04-27 19:53:06,485 - dispatcher - INFO - Обработано: router_id: 0 | UpdateType.MESSAGE_CALLBACK | chat_id: 502592496, user_id: 232299786
+2026-04-27 19:53:07,258 - dispatcher - INFO - Обработано: router_id: 0 | UpdateType.MESSAGE_CALLBACK | chat_id: 502592496, user_id: 232299786
+2026-04-27 19:53:08,632 - dispatcher - INFO - Обработано: router_id: 0 | UpdateType.MESSAGE_CALLBACK | chat_id: 502592496, user_id: 232299786
+2026-04-27 19:53:09,725 - dispatcher - INFO - Обработано: router_id: 0 | UpdateType.MESSAGE_CALLBACK | chat_id: 502592496, user_id: 232299786
+2026-04-27 19:53:10,411 - dispatcher - INFO - Обработано: router_id: 0 | UpdateType.MESSAGE_CALLBACK | chat_id: 502592496, user_id: 232299786
+2026-04-27 19:53:10,886 - dispatcher - INFO - Обработано: router_id: 0 | UpdateType.MESSAGE_CALLBACK | chat_id: 502592496, user_id: 232299786
+✅ URL получен
+📁 Загружаю файл: /root/Data/Scb_tnk/0152.pdf
+✅ Файл загружен, токен получен
+2026-04-27 19:53:13,223 - dispatcher - INFO - Обработано: router_id: 0 | UpdateType.MESSAGE_CALLBACK | chat_id: 502592496, user_id: 232299786
+✅ URL получен
+📁 Загружаю файл: /root/Data/Scb_tnk/0884.pdf
+✅ Файл загружен, токен получен
+2026-04-27 19:53:14,776 - dispatcher - INFO - Обработано: router_id: 0 | UpdateType.MESSAGE_CALLBACK | chat_id: 502592496, user_id: 232299786
+2026-04-27 19:53:15,213 - dispatcher - INFO - Обработано: router_id: 0 | UpdateType.MESSAGE_CALLBACK | chat_id: 502592496, user_id: 232299786
+2026-04-27 19:53:16,363 - dispatcher - INFO - Обработано: router_id: 0 | UpdateType.MESSAGE_CALLBACK | chat_id: 502592496, user_id: 232299786
+2026-04-27 19:53:20,778 - dispatcher - INFO - Обработано: router_id: 0 | UpdateType.MESSAGE_CALLBACK | chat_id: 502592496, user_id: 232299786
+get_documents
+device: Приборы СЦБ, action: None
+2026-04-27 19:53:22,628 - dispatcher - INFO - Обработано: router_id: 0 | UpdateType.MESSAGE_CALLBACK | chat_id: 502592496, user_id: 232299786
+2026-04-27 19:53:23,988 - dispatcher - INFO - Обработано: router_id: 0 | UpdateType.MESSAGE_CALLBACK | chat_id: 502592496, user_id: 232299786
+2026-04-27 19:53:26,405 - dispatcher - INFO - Обработано: router_id: 0 | UpdateType.MESSAGE_CALLBACK | chat_id: 502592496, user_id: 232299786
+2026-04-27 19:53:30,978 - dispatcher - INFO - Обработано: router_id: 0 | UpdateType.MESSAGE_CALLBACK | chat_id: 502592496, user_id: 232299786
+2026-04-27 19:53:32,167 - dispatcher - INFO - Обработано: router_id: 0 | UpdateType.MESSAGE_CALLBACK | chat_id: 502592496, user_id: 232299786
+get_documents
+device: Кабельная сеть и внутренний монтаж, action: None
+2026-04-27 19:53:33,982 - dispatcher - INFO - Обработано: router_id: 0 | UpdateType.MESSAGE_CALLBACK | chat_id: 502592496, user_id: 232299786
+2026-04-27 19:53:40,559 - dispatcher - INFO - Обработано: router_id: 0 | UpdateType.MESSAGE_CALLBACK | chat_id: 502592496, user_id: 232299786
+2026-04-27 19:53:42,019 - dispatcher - INFO - Обработано: router_id: 0 | UpdateType.MESSAGE_CALLBACK | chat_id: 502592496, user_id: 232299786
+2026-04-28 09:47:35,991 - dispatcher - INFO - Обработано: router_id: 0 | UpdateType.MESSAGE_CALLBACK | chat_id: 505548022, user_id: 235823628
